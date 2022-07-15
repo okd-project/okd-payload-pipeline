@@ -9,7 +9,7 @@ spec:
     git:
       uri: 'https://github.com/openshift/machine-config-operator'
       ref: release-4.12
-    contextDir: base
+    contextDir: .
   strategy:
     type: Docker
     dockerStrategy:
