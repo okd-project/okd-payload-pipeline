@@ -1,0 +1,38 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: pod
+  namespace: okd
+  failureDescription: |
+    [1/2] STEP 4/4: RUN dnf install -y gcc glibc-static && mkdir -p bin && gcc -Os -Wall -Werror -static -o bin/pause ./linux/pause.c
+    CentOS Stream 9 - BaseOS 4.1 MB/s | 5.7 MB 00:01
+    CentOS Stream 9 - AppStream 13 MB/s | 14 MB 00:01
+    CentOS Stream 9 - Extras packages 24 kB/s | 8.5 kB 00:00
+    Last metadata expiration check: 0:00:01 ago on Sat Jul 16 07:17:10 2022.
+    Package gcc-11.3.1-2.el9.x86_64 is already installed.
+    No match for argument: glibc-static
+    Error: Unable to find a match: glibc-static
+spec:
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/openshift/kubernetes'
+      ref: release-4.12
+    contextDir: build/pause
+    images:
+      - from:
+          kind: ImageStreamTag
+          name: 'release:builder'
+        as:
+          - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.11'
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile.Rhel
+      from:
+        kind: "ImageStreamTag"
+        name: "release:base"
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'release:pod'

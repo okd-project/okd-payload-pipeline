@@ -1,0 +1,30 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: kuryr-cni-rpm-base
+  namespace: okd
+  failureDescription: |
+    STEP 3/9: RUN (sed -i -e 's/enabled \?= \?0/enabled = 1/' /etc/yum.repos.d/built.repo || true) && dnf install -y openshift-kuryr-controller && dnf clean all && rm -rf /var/cache/yum
+    sed: can't read /etc/yum.repos.d/built.repo: No such file or directory
+    CentOS Stream 9 - BaseOS 3.8 MB/s | 5.7 MB 00:01
+    CentOS Stream 9 - AppStream 31 MB/s | 14 MB 00:00
+    CentOS Stream 9 - Extras packages 45 kB/s | 8.5 kB 00:00
+    No match for argument: openshift-kuryr-controller
+spec:
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/openshift/kuryr-kubernetes'
+      ref: release-4.12
+    contextDir: .
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: openshift-kuryr-controller-rhel8.Dockerfile
+      from:
+        kind: "ImageStreamTag"
+        name: "release:base"
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'release:kuryr-cni-rpm-base'

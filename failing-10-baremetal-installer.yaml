@@ -1,0 +1,35 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: baremetal-installer
+  namespace: okd
+  failureDescription: |
+    No match for argument: libvirt-devel-8.0.0
+    Error: Unable to find a match: libvirt-devel-8.0.0
+spec:
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/openshift/installer'
+      ref: release-4.12
+    contextDir: .
+    images:
+      - from:
+          kind: ImageStreamTag
+          name: 'release:builder'
+        as:
+          - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.17-openshift-4.11'
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: images/baremetal/Dockerfile.ci
+      buildArgs:
+          - name: "TAGS"
+            value: "baremetal libvirt okd"
+      from:
+        kind: "ImageStreamTag"
+        name: "release:base"
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'release:baremetal-installer'

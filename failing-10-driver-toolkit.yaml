@@ -1,0 +1,36 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: driver-toolkit
+  namespace: okd
+  failureDescription: |
+    STEP 5/17: RUN echo ${RHEL_VERSION} > /etc/yum/vars/releasever && yum config-manager --best --setopt=install_weak_deps=False --save
+    No such command: config-manager. Please use /usr/bin/yum --help
+    It could be a YUM plugin command, try: "yum install 'dnf-command(config-manager)'"
+spec:
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/openshift/driver-toolkit'
+      ref: release-4.12
+    contextDir: .
+    images:
+      - from:
+          kind: ImageStreamTag
+          name: 'release:builder'
+        as:
+          - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.11'
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+      from:
+        kind: "ImageStreamTag"
+        name: "release:base"
+      buildArgs:
+      - name: RHEL_VERSION
+        value: "9.0"
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'release:driver-toolkit'

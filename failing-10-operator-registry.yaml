@@ -1,0 +1,32 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: operator-registry
+  namespace: okd
+  failureDescription: |
+    cgo: C compiler "o64-clang" not found: exec: "o64-clang": executable file not found in $PATH
+    make: *** [Makefile:86: cross] Error 2
+spec:
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/openshift/operator-framework-olm'
+      ref: release-4.12
+    contextDir: .
+    images:
+      - from:
+          kind: ImageStreamTag
+          name: 'release:builder'
+        as:
+          - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.12'
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: operator-registry.Dockerfile
+      from:
+        kind: "ImageStreamTag"
+        name: "release:base"
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'release:operator-registry'

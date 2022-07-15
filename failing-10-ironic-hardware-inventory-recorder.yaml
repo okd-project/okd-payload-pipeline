@@ -1,0 +1,25 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: ironic-hardware-inventory-recorder
+  namespace: okd
+  failureDescription: |
+    No match for argument: python3-hardware
+spec:
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/openshift/ironic-hardware-inventory-recorder-image'
+      ref: release-4.12
+    contextDir: .
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile.ocp
+      from:
+        kind: "ImageStreamTag"
+        name: "release:base"
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'release:ironic-hardware-inventory-recorder'
