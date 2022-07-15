@@ -1,0 +1,33 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: tools
+  namespace: okd
+  failureDescription: |
+    STEP 2/6: RUN INSTALL_PKGS=" bash-completion bc bind-utils blktrace crash e2fsprogs ethtool file git glibc-utils gzip hwloc iotop iproute iputils jq less ltrace mailx net-tools nmap-ncat parted pciutils procps-ng psmisc perf strace sysstat tcpdump tmux util-linux vim-enhanced wget xfsprogs fio stress-ng " && yum -y install $INSTALL_PKGS && rpm -V --nosize --nofiledigest --nomtime --nomode $INSTALL_PKGS && yum clean all && rm -rf /var/cache/*
+    ...
+    No match for argument: mailx
+spec:
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/openshift/oc'
+      ref: release-4.12
+    contextDir: .
+    images:
+      - from:
+          kind: ImageStreamTag
+          name: 'release:builder'
+        as:
+          - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.11'
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: images/tools/Dockerfile
+      from:
+        kind: "ImageStreamTag"
+        name: "release:base"
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'release:tools'
