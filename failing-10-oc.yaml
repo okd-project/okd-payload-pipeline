@@ -9,7 +9,7 @@ spec:
     git:
       uri: 'https://github.com/openshift/oc'
       ref: release-4.12
-    contextDir: images/cli
+    contextDir: .
     images:
       - from:
           kind: ImageStreamTag
@@ -19,7 +19,7 @@ spec:
   strategy:
     type: Docker
     dockerStrategy:
-      dockerfilePath: Dockerfile.rhel
+      dockerfilePath: images/cli/Dockerfile.rhel
       from:
         kind: "ImageStreamTag"
         name: "release:base"
