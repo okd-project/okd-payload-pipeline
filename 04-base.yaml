@@ -7,13 +7,13 @@ spec:
   source:
     type: Git
     git:
-      uri: 'https://github.com/openshift/images'
-      ref: release-4.12
+      uri: 'https://github.com/vrutkovs/openshift-images'
+      ref: centos9
     contextDir: base
   strategy:
     type: Docker
     dockerStrategy:
-      dockerfilePath: Dockerfile.rhel7
+      dockerfilePath: Dockerfile.centos9
       from:
         kind: "ImageStreamTag"
         name: "release:builder"
