@@ -1,0 +1,33 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: cli-artifacts
+  namespace: okd
+  failureDescription: |
+    go build -tags 'include_gcs include_oss containers_image_openpgp' -ldflags "-X github.com/openshift/oc/pkg/version.versionFromGit="v4.2.0-alpha.0-1560-gddfe9e9" -X github.com/openshift/oc/pkg/version.commitFromGit="ddfe9e9ae" -X github.com/openshift/oc/pkg/version.gitTreeState="dirty" -X github.com/openshift/oc/pkg/version.buildDate="2022-07-15T15:18:07Z" -X k8s.io/component-base/version.gitMajor="1" -X k8s.io/component-base/version.gitMinor="24" -X k8s.io/component-base/version.gitVersion="v1.24.1" -X k8s.io/component-base/version.gitCommit="ddfe9e9ae" -X k8s.io/component-base/version.buildDate="2022-07-15T15:18:05Z" -X k8s.io/component-base/version.gitTreeState="clean" -X k8s.io/client-go/pkg/version.gitVersion="v4.2.0-alpha.0-1560-gddfe9e9" -X k8s.io/client-go/pkg/version.gitCommit="ddfe9e9ae" -X k8s.io/client-go/pkg/version.buildDate="2022-07-15T15:18:05Z" -X k8s.io/client-go/pkg/version.gitTreeState="dirty"" -o '_output/bin/darwin_arm64/oc' github.com/openshift/oc/cmd/oc
+      SOURCE_GIT_TAG=v4.2.0-alpha.0-1560-gddfe9e9 hack/generate-versioninfo.sh
+      hack/generate-versioninfo.sh: line 58: goversioninfo: command not found
+spec:
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/openshift/oc'
+      ref: release-4.12
+    contextDir: .
+    images:
+      - from:
+          kind: ImageStreamTag
+          name: 'release:builder'
+        as:
+          - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.11'
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: images/cli-artifacts/Dockerfile.rhel
+      from:
+        kind: "ImageStreamTag"
+        name: "release:base"
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'release:cli-artifacts'
