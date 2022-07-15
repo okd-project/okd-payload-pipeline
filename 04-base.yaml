@@ -13,7 +13,7 @@ spec:
   strategy:
     type: Docker
     dockerStrategy:
-      dockerfilePath: Dockerfile.rhel
+      dockerfilePath: Dockerfile.rhel7
       from:
         kind: "ImageStreamTag"
         name: "release:builder"
