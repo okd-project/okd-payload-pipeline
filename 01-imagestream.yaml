@@ -6,11 +6,4 @@ metadata:
 spec:
   lookupPolicy:
     local: true
-  tags:
-    - name: builder
-    - name: base
-    - name: machine-config-operator
-    - name: cluster-version-operator
-    - name: cli
-    - name: tools
-    - name: cli-artifacts
+  tags: {}
