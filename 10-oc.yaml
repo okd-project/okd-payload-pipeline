@@ -16,7 +16,7 @@ spec:
       dockerfilePath: Dockerfile.rhel
       from:
         kind: "ImageStreamTag"
-        name: "release:builder"
+        name: "release:base"
   output:
     to:
       kind: ImageStreamTag
