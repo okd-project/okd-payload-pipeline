@@ -1,0 +1,23 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: machine-config-operator
+  namespace: okd
+spec:
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/openshift/machine-config-operator'
+      ref: release-4.12
+    contextDir: base
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile.rhel7
+      from:
+        kind: "ImageStreamTag"
+        name: "release:builder"
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'release:machine-config-operator'

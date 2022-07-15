@@ -1,0 +1,23 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: cluster-version-operator
+  namespace: okd
+spec:
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/openshift/cluster-version-operator'
+      ref: release-4.12
+    contextDir: base
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile.rhel
+      from:
+        kind: "ImageStreamTag"
+        name: "release:builder"
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'release:cluster-version-operator'

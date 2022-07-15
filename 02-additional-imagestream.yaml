@@ -1,0 +1,16 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: tools
+  namespace: okd
+spec:
+  lookupPolicy:
+    local: true
+  tags:
+    - name: centos9
+      annotations: null
+      from:
+        kind: DockerImage
+        name: 'quay.io/centos/centos:stream9'
+      referencePolicy:
+        type: Local

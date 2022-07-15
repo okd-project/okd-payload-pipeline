@@ -1,0 +1,23 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: builder
+  namespace: okd
+spec:
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/okd-project/images'
+      ref: master
+    contextDir: .
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: okd-golang-builder.Dockerfile
+      from:
+        kind: "ImageStreamTag"
+        name: "tools:centos9"
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'release:builder'
