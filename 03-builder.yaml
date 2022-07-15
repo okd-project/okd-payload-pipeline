@@ -8,7 +8,7 @@ spec:
     type: Git
     git:
       uri: 'https://github.com/okd-project/images'
-      ref: master
+      ref: main
     contextDir: .
   strategy:
     type: Docker
