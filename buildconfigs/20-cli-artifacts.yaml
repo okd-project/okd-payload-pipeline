@@ -24,7 +24,7 @@ spec:
           kind: ImageStreamTag
           name: 'release:forked-dockerfiles'
         paths:
-        - sourcePath: /code/forks/cli-artifacts/Dockerfile.centos9
+        - sourcePath: /code/cli-artifacts/Dockerfile.centos9
           destinationDir: "./images/cli-artifacts"
   strategy:
     type: Docker

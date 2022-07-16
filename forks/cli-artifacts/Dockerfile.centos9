@@ -4,6 +4,7 @@ FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.11 AS 
 WORKDIR /go/src/github.com/openshift/oc
 COPY . .
 RUN yum install -y krb5-devel && yum clean all
+RUN GOPATH=$HOME/go GOFLAGS="" go install github.com/josephspurrier/goversioninfo/cmd/goversioninfo@latest && mkdir $HOME/bin && cp -rvf $HOME/go/bin/goversioninfo /usr/local/bin
 RUN make cross-build --warn-undefined-variables
 
 FROM registry.ci.openshift.org/ocp/4.11:cli
