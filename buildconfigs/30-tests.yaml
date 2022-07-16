@@ -1,0 +1,35 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: tests
+  namespace: okd
+spec:
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/openshift/origin'
+      ref: release-4.12
+    contextDir: .
+    images:
+      - from:
+          kind: ImageStreamTag
+          name: 'release:builder'
+        as:
+          - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.11'
+      - from:
+          kind: ImageStreamTag
+          name: 'release:forked-dockerfiles'
+        paths:
+        - sourcePath: /code/tests/Dockerfile.centos9
+          destinationDir: "./images/tests"
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: images/tests/Dockerfile.centos9
+      from:
+        kind: "ImageStreamTag"
+        name: "release:tools"
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'release:tests'
