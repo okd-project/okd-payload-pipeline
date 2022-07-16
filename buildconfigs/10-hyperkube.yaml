@@ -1,0 +1,35 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: hyperkube
+  namespace: okd
+spec:
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/openshift/kubernetes'
+      ref: release-4.12
+    contextDir: .
+    images:
+      - from:
+          kind: ImageStreamTag
+          name: 'release:builder'
+        as:
+          - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.11'
+      - from:
+          kind: ImageStreamTag
+          name: 'release:forked-dockerfiles'
+        paths:
+        - sourcePath: /code/hyperkube/Dockerfile.centos9
+          destinationDir: "./openshift-hack/images/hyperkube"
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: openshift-hack/images/hyperkube/Dockerfile.centos9
+      from:
+        kind: "ImageStreamTag"
+        name: "release:base"
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'release:hyperkube'
