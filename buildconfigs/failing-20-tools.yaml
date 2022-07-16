@@ -17,16 +17,17 @@ spec:
     images:
       - from:
           kind: ImageStreamTag
-          name: 'release:builder'
-        as:
-          - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.11'
+          name: 'release:forked-dockerfiles'
+        paths:
+        - sourcePath: /code/tools/Dockerfile.centos9
+          destinationDir: "./images/tools"
   strategy:
     type: Docker
     dockerStrategy:
-      dockerfilePath: images/tools/Dockerfile
+      dockerfilePath: images/tools/Dockerfile.centos9
       from:
         kind: "ImageStreamTag"
-        name: "release:base"
+        name: "release:cli"
   output:
     to:
       kind: ImageStreamTag
