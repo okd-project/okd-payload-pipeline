@@ -1,15 +1,13 @@
 apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
-  name: agent-installer-csr-approver
+  name: agent-installer-api-server
   namespace: okd
-  failureDescription: |
-    needs cli
 spec:
   source:
     type: Git
     git:
-      uri: 'https://github.com/openshift/assisted-installer'
+      uri: 'https://github.com/openshift/assisted-service'
       ref: release-4.12
     contextDir: .
     images:
@@ -17,7 +15,7 @@ spec:
           kind: ImageStreamTag
           name: 'release:builder'
         as:
-          - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.11'
+          - 'registry.ci.openshift.org/openshift/release:golang-1.17'
       - from:
           kind: ImageStreamTag
           name: 'release:cli'
@@ -26,11 +24,11 @@ spec:
   strategy:
     type: Docker
     dockerStrategy:
-      dockerfilePath: Dockerfile.assisted-installer-controller.ocp
+      dockerfilePath: Dockerfile.assisted-service.ocp
       from:
         kind: "ImageStreamTag"
         name: "release:base"
   output:
     to:
       kind: ImageStreamTag
-      name: 'release:agent-installer-csr-approver'
+      name: 'release:agent-installer-api-server'
