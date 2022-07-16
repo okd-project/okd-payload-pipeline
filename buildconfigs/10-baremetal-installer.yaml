@@ -19,10 +19,16 @@ spec:
           name: 'release:builder'
         as:
           - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.17-openshift-4.11'
+      - from:
+          kind: ImageStreamTag
+          name: 'release:forked-dockerfiles'
+        paths:
+        - sourcePath: /code/baremetal-installer/Dockerfile.centos9
+          destinationDir: "./images/baremetal"
   strategy:
     type: Docker
     dockerStrategy:
-      dockerfilePath: images/baremetal/Dockerfile.ci
+      dockerfilePath: images/baremetal/Dockerfile.centos9
       buildArgs:
           - name: "TAGS"
             value: "baremetal libvirt okd"
