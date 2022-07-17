@@ -7,7 +7,7 @@ spec:
   source:
     type: Git
     git:
-      uri: 'https://github.com/openshift/network-interface-bond-cni'
+      uri: 'https://github.com/openshift/bond-cni'
       ref: release-4.12
     contextDir: .
     images:
