@@ -1,0 +1,93 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: partial-build
+  namespace: okd
+spec:
+  params:
+    - name: initial-image
+      type: string
+      description: Initial image to import
+      default: registry.ci.openshift.org/origin/release:4.12.0-0.okd-2022-07-16-093448
+    - name: result-mirror-location
+      type: string
+      description: Location to mirror resulting images
+      default: quay.io/vrutkovs/okd-release
+    - name: result-image
+      type: string
+      description: Resulting release location
+      default: quay.io/vrutkovs/okd-release:4.12.0-0.okd-centos9-cli
+    - name: result-image-name
+      type: string
+      description: Internal release name
+      default: 4.12.0-0.okd-centos9-cli
+  tasks:
+    - name: initial-import
+      taskRef:
+        name: openshift-client
+        kind: ClusterTask
+      params:
+        - name: SCRIPT
+          value: |
+            oc adm release mirror \
+              $(params.initial-image) \
+              --to-image-stream release
+    - name: prepare-build-images
+      runAfter:
+      - initial-import
+      taskRef:
+        name: openshift-client
+        kind: ClusterTask
+      params:
+        - name: SCRIPT
+          value: |
+            oc start-build builder --follow && \
+            oc start-build forked-dockerfiles --follow && \
+            oc start-build base --follow
+    - name: build-oc
+      runAfter:
+      - prepare-build-images
+      taskRef:
+        name: openshift-client
+        kind: ClusterTask
+      params:
+        - name: SCRIPT
+          value: |
+            oc start-build oc --follow
+    - name: build-multus-cni
+      runAfter:
+      - prepare-build-images
+      taskRef:
+        name: openshift-client
+        kind: ClusterTask
+      params:
+        - name: SCRIPT
+          value: |
+            oc start-build multus-cni --follow
+    - name: build-pod
+      runAfter:
+      - prepare-build-images
+      taskRef:
+        name: openshift-client
+        kind: ClusterTask
+      params:
+        - name: SCRIPT
+          value: |
+            oc start-build pod --follow
+    - name: new-release
+      runAfter:
+      - build-oc
+      - build-multus-cni
+      - build-pod
+      taskRef:
+        name: openshift-client
+        kind: ClusterTask
+      params:
+        - name: SCRIPT
+          value: |
+            oc adm release new \
+            --from-image-stream release \
+            --insecure=true \
+            --mirror $(params.result-mirror-location) \
+            --to-image $(params.result-image) \
+            --name=$(params.result-image-name)
