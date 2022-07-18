@@ -52,6 +52,7 @@ spec:
       taskRef:
         name: openshift-client
         kind: ClusterTask
+      timeout: "2h0m0s"
       params:
         - name: SCRIPT
           value: |
@@ -77,6 +78,7 @@ spec:
       taskRef:
         name: openshift-client
         kind: ClusterTask
+      timeout: "2h0m0s"
       params:
         - name: SCRIPT
           value: |
@@ -102,6 +104,7 @@ spec:
       taskRef:
         name: openshift-client
         kind: ClusterTask
+      timeout: "2h0m0s"
       params:
         - name: SCRIPT
           value: |
@@ -126,6 +129,7 @@ spec:
       taskRef:
         name: openshift-client
         kind: ClusterTask
+      timeout: "2h0m0s"
       params:
         - name: SCRIPT
           value: |
@@ -151,6 +155,7 @@ spec:
       taskRef:
         name: openshift-client
         kind: ClusterTask
+      timeout: "2h0m0s"
       params:
         - name: SCRIPT
           value: |
@@ -176,6 +181,7 @@ spec:
       taskRef:
         name: openshift-client
         kind: ClusterTask
+      timeout: "2h0m0s"
       params:
         - name: SCRIPT
           value: |
@@ -201,6 +207,7 @@ spec:
       taskRef:
         name: openshift-client
         kind: ClusterTask
+      timeout: "2h0m0s"
       params:
         - name: SCRIPT
           value: |
@@ -226,6 +233,7 @@ spec:
       taskRef:
         name: openshift-client
         kind: ClusterTask
+      timeout: "2h0m0s"
       params:
         - name: SCRIPT
           value: |
@@ -251,6 +259,7 @@ spec:
       taskRef:
         name: openshift-client
         kind: ClusterTask
+      timeout: "2h0m0s"
       params:
         - name: SCRIPT
           value: |
@@ -276,6 +285,7 @@ spec:
       taskRef:
         name: openshift-client
         kind: ClusterTask
+      timeout: "2h0m0s"
       params:
         - name: SCRIPT
           value: |
@@ -299,6 +309,7 @@ spec:
       taskRef:
         name: openshift-client
         kind: ClusterTask
+      timeout: "2h0m0s"
       params:
         - name: SCRIPT
           value: |
@@ -323,6 +334,7 @@ spec:
       taskRef:
         name: openshift-client
         kind: ClusterTask
+      timeout: "2h0m0s"
       params:
         - name: SCRIPT
           value: |
@@ -348,6 +360,7 @@ spec:
       taskRef:
         name: openshift-client
         kind: ClusterTask
+      timeout: "2h0m0s"
       params:
         - name: SCRIPT
           value: |
@@ -373,6 +386,7 @@ spec:
       taskRef:
         name: openshift-client
         kind: ClusterTask
+      timeout: "2h0m0s"
       params:
         - name: SCRIPT
           value: |
@@ -398,6 +412,7 @@ spec:
       taskRef:
         name: openshift-client
         kind: ClusterTask
+      timeout: "2h0m0s"
       params:
         - name: SCRIPT
           value: |
@@ -423,6 +438,7 @@ spec:
       taskRef:
         name: openshift-client
         kind: ClusterTask
+      timeout: "2h0m0s"
       params:
         - name: SCRIPT
           value: |
@@ -448,6 +464,7 @@ spec:
       taskRef:
         name: openshift-client
         kind: ClusterTask
+      timeout: "2h0m0s"
       params:
         - name: SCRIPT
           value: |
@@ -469,6 +486,7 @@ spec:
       taskRef:
         name: openshift-client
         kind: ClusterTask
+      timeout: "2h0m0s"
       params:
         - name: SCRIPT
           value: |
@@ -488,6 +506,7 @@ spec:
       taskRef:
         name: openshift-client
         kind: ClusterTask
+      timeout: "2h0m0s"
       params:
         - name: SCRIPT
           value: |
