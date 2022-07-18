@@ -21,6 +21,8 @@ spec:
       type: string
       description: Internal release name
       default: 4.12.0-0.okd-centos9-full-rebuild
+  workspaces:
+    - name: push-credentials
   tasks:
     - name: initial-import
       taskRef:
@@ -497,10 +499,14 @@ spec:
       taskRef:
         name: openshift-client
         kind: ClusterTask
+      workspaces:
+      - name: manifest-dir
+        workspace: push-credentials
       params:
         - name: SCRIPT
           value: |
             oc adm release new \
+            --registry-config=$(workspaces.manifest-dir.path)/auth.json \
             --from-image-stream release \
             --insecure=true \
             --mirror $(params.result-mirror-location) \
