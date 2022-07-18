@@ -475,7 +475,6 @@ spec:
             oc start-build agent-installer-api-server
             oc start-build agent-installer-csr-approver
             oc start-build cli-artifacts
-            oc start-build machine-os-images
             oc start-build tools
             oc wait --timeout=30m --for=condition=Running=False builds --all
             FAILED_BUILDS=$(oc get builds -o=jsonpath='{.items[?(@.status.phase=="Failed")].metadata.name}')
