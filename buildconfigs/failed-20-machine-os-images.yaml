@@ -3,6 +3,12 @@ kind: BuildConfig
 metadata:
   name: machine-os-images
   namespace: okd
+  failureDescription: |
+    No match for argument: jq
+    Package wget-1.19.5-10.el8.x86_64 is already installed.
+    No match for argument: coreos-installer
+    Error: Unable to find a match: jq coreos-installer
+    error: build error: error building at STEP "RUN dnf instal...reos-installer": error while running runtime: exit status 1
 spec:
   source:
     type: Git
