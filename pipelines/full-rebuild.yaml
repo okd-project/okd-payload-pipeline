@@ -43,9 +43,9 @@ spec:
       params:
         - name: SCRIPT
           value: |
-            oc start-build builder --follow && \
-            oc start-build forked-dockerfiles --follow && \
-            oc start-build base --follow
+            oc start-build builder -w && \
+            oc start-build forked-dockerfiles -w && \
+            oc start-build base -w
     - name: build-batch-01
       runAfter:
       - prepare-build-images
