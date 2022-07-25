@@ -236,68 +236,13 @@ spec:
         - name: SCRIPT
           value: |
             oc start-build openshift-apiserver --wait
-    - name: build-required-01
-      runAfter:
-      - build-03-01
-      - build-03-02
-      - build-03-03
-      - build-03-04
-      - build-03-05
-      taskRef:
-        name: openshift-client
-        kind: ClusterTask
-      params:
-        - name: SCRIPT
-          value: |
-            oc start-build pod --wait
-    - name: build-required-02
-      runAfter:
-      - build-03-01
-      - build-03-02
-      - build-03-03
-      - build-03-04
-      - build-03-05
-      taskRef:
-        name: openshift-client
-        kind: ClusterTask
-      params:
-        - name: SCRIPT
-          value: |
-            oc start-build oc --wait
-    - name: build-required-03
-      runAfter:
-      - build-03-01
-      - build-03-02
-      - build-03-03
-      - build-03-04
-      - build-03-05
-      taskRef:
-        name: openshift-client
-        kind: ClusterTask
-      params:
-        - name: SCRIPT
-          value: |
-            oc start-build baremetal-runtimecfg --wait
-    - name: build-required-04
-      runAfter:
-      - build-03-01
-      - build-03-02
-      - build-03-03
-      - build-03-04
-      - build-03-05
-      taskRef:
-        name: openshift-client
-        kind: ClusterTask
-      params:
-        - name: SCRIPT
-          value: |
-            oc start-build keepalived-ipfailover --wait
     - name: new-release
       runAfter:
-      - build-required-01
-      - build-required-02
-      - build-required-03
-      - build-required-04
+      - build-02-01
+      - build-02-02
+      - build-02-03
+      - build-02-04
+      - build-02-05
       taskRef:
         name: openshift-client
         kind: ClusterTask
