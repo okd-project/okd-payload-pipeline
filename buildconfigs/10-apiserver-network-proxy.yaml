@@ -15,7 +15,7 @@ spec:
           kind: ImageStreamTag
           name: 'release:builder'
         as:
-          - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.12'
+          - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.11'
   strategy:
     type: Docker
     dockerStrategy:
