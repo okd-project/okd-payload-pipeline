@@ -314,4 +314,5 @@ spec:
             --insecure=true \
             --mirror $(params.result-mirror-location) \
             --to-image $(params.result-image) \
-            --name=$(params.result-image-name)
+            --name=$(params.result-image-name) \
+            --include=baremetal-runtimecfg,keepalived-ipfailover,pod,baremetal-machine-controllers,gcp-machine-controllers,ibmcloud-machine-controllers,libvirt-machine-controllers,nutanix-machine-controllers,openstack-machine-api-provider,openstack-machine-controllers,ovirt-machine-controllers,powervs-machine-controllers
