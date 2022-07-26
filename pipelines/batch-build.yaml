@@ -1,0 +1,24 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: batch-build
+  namespace: okd
+spec:
+  params:
+    - name: buildconfigs
+      type: array
+  steps:
+    - name: builds
+      image: image-registry.openshift-image-registry.svc:5000/openshift/cli:latest
+      args: ["$(params.buildconfigs[*])"]
+      script: |
+        for BUILD in "$@"; do
+          oc start-build "${BUILD}" -w &
+        done
+        while true; do
+          wait -n || {
+            code="$?"
+            ([[ $code = "127" ]] && exit 0 || exit "$code")
+            break
+          }
+        done;

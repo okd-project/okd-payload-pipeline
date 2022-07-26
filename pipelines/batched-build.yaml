@@ -1,0 +1,86 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: batched-build
+  namespace: okd
+spec:
+  params:
+    - name: initial-image
+      type: string
+      description: Initial image to import
+      default: registry.ci.openshift.org/origin/release:4.12.0-0.okd-2022-07-25-043310
+    - name: result-mirror-location
+      type: string
+      description: Location to mirror resulting images
+      default: quay.io/vrutkovs/okd-release
+    - name: result-image
+      type: string
+      description: Resulting release location
+      default: quay.io/vrutkovs/okd-release:4.12.0-0.okd-centos9-rebuild
+    - name: result-image-name
+      type: string
+      description: Internal release name
+      default: 4.12.0-0.okd-centos9-rebuild
+  workspaces:
+    - name: push-credentials
+  tasks:
+    - name: batch-01
+      taskRef:
+        name: batch-build
+      params:
+        - name: buildconfigs
+          value:
+          - ovirt-machine-controllers
+          - ovirt-machine-controllers
+          - pod
+          - powervs-cloud-controller-manager
+          - powervs-machine-controllers
+    - name: batch-02
+      runAfter:
+      - batch-01
+      taskRef:
+        name: batch-build
+      params:
+        - name: buildconfigs
+          value:
+          - prom-label-proxy
+          - prometheus-alertmanager
+          - prometheus-config-reloader
+          - prometheus-node-exporter
+          - prometheus-operator-admission-webhook
+    - name: batch-03
+      runAfter:
+      - batch-02
+      taskRef:
+        name: batch-build
+      params:
+        - name: buildconfigs
+          value:
+          - prometheus-operator
+          - prometheus
+          - service-ca-operator
+          - telemeter
+          - thanos
+    - name: new-release
+      runAfter:
+      - batch-01
+      - batch-02
+      - batch-03
+      taskRef:
+        name: openshift-client
+        kind: ClusterTask
+      timeout: "2h0m0s"
+      workspaces:
+      - name: manifest-dir
+        workspace: push-credentials
+      params:
+        - name: SCRIPT
+          value: |
+            oc adm release new \
+            --registry-config=$(workspaces.manifest-dir.path)/auth.json \
+            --from-image-stream release \
+            --insecure=true \
+            --mirror $(params.result-mirror-location) \
+            --to-image $(params.result-image) \
+            --name=$(params.result-image-name) \
+            --include=baremetal-runtimecfg,keepalived-ipfailover,pod,baremetal-machine-controllers,gcp-machine-controllers,ibmcloud-machine-controllers,libvirt-machine-controllers,nutanix-machine-controllers,openstack-machine-api-provider,openstack-machine-controllers,ovirt-machine-controllers,powervs-machine-controllers,alibaba-machine-controllers

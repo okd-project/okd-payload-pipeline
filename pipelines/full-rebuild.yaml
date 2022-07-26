@@ -46,418 +46,290 @@ spec:
             oc start-build builder -w && \
             oc start-build forked-dockerfiles -w && \
             oc start-build base -w
-    - name: build-batch-01
+    - name: batch-01
       runAfter:
       - prepare-build-images
       taskRef:
-        name: openshift-client
-        kind: ClusterTask
-      timeout: "2h0m0s"
+        name: batch-build
       params:
-        - name: SCRIPT
-          value: |
-            oc start-build agent-installer-node-agent
-            oc start-build agent-installer-orchestrator
-            oc start-build alibaba-cloud-controller-manager
-            oc start-build alibaba-cloud-csi-driver
-            oc start-build alibaba-disk-csi-driver-operator
-            oc start-build alibaba-machine-controllers
-            oc start-build apiserver-network-proxy
-            oc start-build aws-cloud-controller-manager
-            oc start-build aws-cluster-api-controllers
-            oc start-build aws-ebs-csi-driver-operator
-            oc wait --timeout=30m --for=condition=Running=False builds --all
-            FAILED_BUILDS=$(oc get builds -o=jsonpath='{.items[?(@.status.phase=="Failed")].metadata.name}')
-            if [[ -n "${FAILED_BUILDS}" ]]; then
-              echo "Failed builds: ${FAILED_BUILDS}"
-              exit 1
-            fi
-    - name: build-batch-02
+        - name: buildconfigs
+          value:
+          - agent-installer-node-agent
+          - agent-installer-orchestrator
+          - alibaba-cloud-controller-manager
+          - alibaba-cloud-csi-driver
+          - alibaba-disk-csi-driver-operator
+          - alibaba-machine-controllers
+          - apiserver-network-proxy
+          - aws-cloud-controller-manager
+          - aws-cluster-api-controllers
+          - aws-ebs-csi-driver-operator
+    - name: batch-02
       runAfter:
-      - build-batch-01
+      - batch-01
       taskRef:
-        name: openshift-client
-        kind: ClusterTask
-      timeout: "2h0m0s"
+        name: batch-build
       params:
-        - name: SCRIPT
-          value: |
-            oc start-build aws-ebs-csi-driver
-            oc start-build aws-machine-controllers
-            oc start-build aws-pod-identity-webhook
-            oc start-build azure-cloud-controller-manager
-            oc start-build azure-cloud-node-manager
-            oc start-build azure-cluster-api-controllers
-            oc start-build azure-disk-csi-driver-operator
-            oc start-build azure-disk-csi-driver
-            oc start-build azure-file-csi-driver-operator
-            oc start-build azure-file-csi-driver
-            oc wait --timeout=30m --for=condition=Running=False builds --all
-            FAILED_BUILDS=$(oc get builds -o=jsonpath='{.items[?(@.status.phase=="Failed")].metadata.name}')
-            if [[ -n "${FAILED_BUILDS}" ]]; then
-              echo "Failed builds: ${FAILED_BUILDS}"
-              exit 1
-            fi
-    - name: build-batch-03
+        - name: buildconfigs
+          value:
+          - aws-ebs-csi-driver
+          - aws-machine-controllers
+          - aws-pod-identity-webhook
+          - azure-cloud-controller-manager
+          - azure-cloud-node-manager
+          - azure-cluster-api-controllers
+          - azure-disk-csi-driver-operator
+          - azure-disk-csi-driver
+          - azure-file-csi-driver-operator
+          - azure-file-csi-driver
+    - name: batch-03
       runAfter:
-      - build-batch-02
+      - batch-02
       taskRef:
-        name: openshift-client
-        kind: ClusterTask
-      timeout: "2h0m0s"
+        name: batch-build
       params:
-        - name: SCRIPT
-          value: |
-            oc start-build azure-machine-controllers
-            oc start-build baremetal-machine-controllers
-            oc start-build baremetal-operator
-            oc start-build baremetal-runtimecfg
-            oc start-build branding
-            oc start-build cloud-credential-operator
-            oc start-build cloud-network-config-controller
-            oc start-build cluster-authentication-operator
-            oc start-build cluster-autoscaler-operator
-            oc wait --timeout=30m --for=condition=Running=False builds --all
-            FAILED_BUILDS=$(oc get builds -o=jsonpath='{.items[?(@.status.phase=="Failed")].metadata.name}')
-            if [[ -n "${FAILED_BUILDS}" ]]; then
-              echo "Failed builds: ${FAILED_BUILDS}"
-              exit 1
-            fi
-    - name: build-batch-04
+        - name: buildconfigs
+          value:
+          - azure-machine-controllers
+          - baremetal-machine-controllers
+          - baremetal-operator
+          - baremetal-runtimecfg
+          - branding
+          - cloud-credential-operator
+          - cloud-network-config-controller
+          - cluster-authentication-operator
+          - cluster-autoscaler-operator
+          - cluster-autoscaler
+    - name: batch-04
       runAfter:
-      - build-batch-03
+      - batch-03
       taskRef:
-        name: openshift-client
-        kind: ClusterTask
-      timeout: "2h0m0s"
+        name: batch-build
       params:
-        - name: SCRIPT
-          value: |
-            oc start-build cluster-autoscaler
-            oc start-build cluster-baremetal-operator
-            oc start-build cluster-bootstrap
-            oc start-build cluster-capi-controllers
-            oc start-build cluster-capi-operator
-            oc start-build cluster-cloud-controller-manager-operator
-            oc start-build cluster-config-operator
-            oc start-build cluster-control-plane-machine-set-operator
-            oc start-build cluster-csi-snapshot-controller-operator
-            oc start-build cluster-dns-operator
-            oc wait --timeout=30m --for=condition=Running=False builds --all
-            FAILED_BUILDS=$(oc get builds -o=jsonpath='{.items[?(@.status.phase=="Failed")].metadata.name}')
-            if [[ -n "${FAILED_BUILDS}" ]]; then
-              echo "Failed builds: ${FAILED_BUILDS}"
-              exit 1
-            fi
-    - name: build-batch-05
+        - name: buildconfigs
+          value:
+          - cluster-baremetal-operator
+          - cluster-bootstrap
+          - cluster-capi-controllers
+          - cluster-capi-operator
+          - cluster-cloud-controller-manager-operator
+          - cluster-config-operator
+          - cluster-control-plane-machine-set-operator
+          - cluster-csi-snapshot-controller-operator
+          - cluster-dns-operator
+          - cluster-etcd-operator
+    - name: batch-05
       runAfter:
-      - build-batch-04
+      - batch-04
       taskRef:
-        name: openshift-client
-        kind: ClusterTask
-      timeout: "2h0m0s"
+        name: batch-build
       params:
-        - name: SCRIPT
-          value: |
-            oc start-build cluster-etcd-operator
-            oc start-build cluster-image-registry-operator
-            oc start-build cluster-ingress-operator
-            oc start-build cluster-kube-apiserver-operator
-            oc start-build cluster-kube-cluster-api-operator
-            oc start-build cluster-kube-controller-manager-operator
-            oc start-build cluster-kube-scheduler-operator
-            oc start-build cluster-kube-storage-version-migrator-operator
-            oc start-build cluster-machine-approver
-            oc start-build cluster-monitoring-operator
-            oc wait --timeout=30m --for=condition=Running=False builds --all
-            FAILED_BUILDS=$(oc get builds -o=jsonpath='{.items[?(@.status.phase=="Failed")].metadata.name}')
-            if [[ -n "${FAILED_BUILDS}" ]]; then
-              echo "Failed builds: ${FAILED_BUILDS}"
-              exit 1
-            fi
-    - name: build-batch-06
+        - name: buildconfigs
+          value:
+          - cluster-image-registry-operator
+          - cluster-ingress-operator
+          - cluster-kube-apiserver-operator
+          - cluster-kube-cluster-api-operator
+          - cluster-kube-controller-manager-operator
+          - cluster-kube-scheduler-operator
+          - cluster-kube-storage-version-migrator-operator
+          - cluster-machine-approver
+          - cluster-monitoring-operator
+          - cluster-network-operator
+    - name: batch-06
       runAfter:
-      - build-batch-05
+      - batch-05
       taskRef:
-        name: openshift-client
-        kind: ClusterTask
-      timeout: "2h0m0s"
+        name: batch-build
       params:
-        - name: SCRIPT
-          value: |
-            oc start-build cluster-network-operator
-            oc start-build cluster-openshift-apiserver-operator
-            oc start-build cluster-openshift-controller-manager-operator
-            oc start-build cluster-policy-controller
-            oc start-build cluster-samples-operator
-            oc start-build cluster-storage-operator
-            oc start-build cluster-update-keys
-            oc start-build cluster-version-operator
-            oc start-build configmap-reloader
-            oc start-build console-operator
-            oc wait --timeout=30m --for=condition=Running=False builds --all
-            FAILED_BUILDS=$(oc get builds -o=jsonpath='{.items[?(@.status.phase=="Failed")].metadata.name}')
-            if [[ -n "${FAILED_BUILDS}" ]]; then
-              echo "Failed builds: ${FAILED_BUILDS}"
-              exit 1
-            fi
-    - name: build-batch-07
+        - name: buildconfigs
+          value:
+          - cluster-openshift-apiserver-operator
+          - cluster-openshift-controller-manager-operator
+          - cluster-policy-controller
+          - cluster-samples-operator
+          - cluster-storage-operator
+          - cluster-update-keys
+          - cluster-version-operator
+          - configmap-reloader
+          - console-operator
+          - container-networking-plugins
+    - name: batch-07
       runAfter:
-      - build-batch-06
+      - batch-06
       taskRef:
-        name: openshift-client
-        kind: ClusterTask
-      timeout: "2h0m0s"
+        name: batch-build
       params:
-        - name: SCRIPT
-          value: |
-            oc start-build console
-            oc start-build container-networking-plugins
-            oc start-build contour-operator
-            oc start-build contour
-            oc start-build coredns
-            oc start-build csi-driver-manila-operator
-            oc start-build csi-driver-manila
-            oc start-build csi-driver-nfs
-            oc start-build csi-driver-shared-resource-operator
-            oc start-build csi-driver-shared-resource-webhook
-            oc wait --timeout=30m --for=condition=Running=False builds --all
-            FAILED_BUILDS=$(oc get builds -o=jsonpath='{.items[?(@.status.phase=="Failed")].metadata.name}')
-            if [[ -n "${FAILED_BUILDS}" ]]; then
-              echo "Failed builds: ${FAILED_BUILDS}"
-              exit 1
-            fi
-    - name: build-batch-08
+        - name: buildconfigs
+          value:
+          - contour-operator
+          - contour
+          - coredns
+          - csi-driver-manila-operator
+          - csi-driver-manila
+          - csi-driver-nfs
+          - csi-driver-shared-resource-operator
+          - csi-driver-shared-resource-webhook
+          - csi-driver-shared-resource
+          - csi-external-attacher
+    - name: batch-08
       runAfter:
-      - build-batch-07
+      - batch-07
       taskRef:
-        name: openshift-client
-        kind: ClusterTask
-      timeout: "2h0m0s"
+        name: batch-build
       params:
-        - name: SCRIPT
-          value: |
-            oc start-build csi-driver-shared-resource
-            oc start-build csi-external-attacher
-            oc start-build csi-external-provisioner
-            oc start-build csi-external-resizer
-            oc start-build csi-external-snapshotter
-            oc start-build csi-livenessprobe
-            oc start-build csi-node-driver-registrar
-            oc start-build csi-snapshot-controller
-            oc start-build csi-snapshot-validation-webhook
-            oc start-build deployer
-            oc wait --timeout=30m --for=condition=Running=False builds --all
-            FAILED_BUILDS=$(oc get builds -o=jsonpath='{.items[?(@.status.phase=="Failed")].metadata.name}')
-            if [[ -n "${FAILED_BUILDS}" ]]; then
-              echo "Failed builds: ${FAILED_BUILDS}"
-              exit 1
-            fi
-    - name: build-batch-09
+        - name: buildconfigs
+          value:
+          - csi-external-provisioner
+          - csi-external-resizer
+          - csi-external-snapshotter
+          - csi-livenessprobe
+          - csi-node-driver-registrar
+          - csi-snapshot-controller
+          - csi-snapshot-validation-webhook
+          - deployer
+          - docker-builder
+          - docker-registry
+    - name: batch-09
       runAfter:
-      - build-batch-08
+      - batch-08
       taskRef:
-        name: openshift-client
-        kind: ClusterTask
-      timeout: "2h0m0s"
+        name: batch-build
       params:
-        - name: SCRIPT
-          value: |
-            oc start-build docker-builder
-            oc start-build docker-registry
-            oc start-build egress-router-cni
-            oc start-build etcd
-            oc start-build external-dns
-            oc start-build gcp-cloud-controller-manager
-            oc start-build gcp-cluster-api-controllers
-            oc start-build gcp-machine-controllers
-            oc start-build gcp-pd-csi-driver-operator
-            oc start-build gcp-pd-csi-driver
-            oc wait --timeout=30m --for=condition=Running=False builds --all
-            FAILED_BUILDS=$(oc get builds -o=jsonpath='{.items[?(@.status.phase=="Failed")].metadata.name}')
-            if [[ -n "${FAILED_BUILDS}" ]]; then
-              echo "Failed builds: ${FAILED_BUILDS}"
-              exit 1
-            fi
-    - name: build-batch-10
+        - name: buildconfigs
+          value:
+          - egress-router-cni
+          - etcd
+          - external-dns
+          - gcp-cloud-controller-manager
+          - gcp-cluster-api-controllers
+          - gcp-machine-controllers
+          - gcp-pd-csi-driver-operator
+          - gcp-pd-csi-driver
+          - haproxy-router-base
+          - hypershift
+    - name: batch-10
       runAfter:
-      - build-batch-09
+      - batch-09
       taskRef:
-        name: openshift-client
-        kind: ClusterTask
-      timeout: "2h0m0s"
+        name: batch-build
       params:
-        - name: SCRIPT
-          value: |
-            oc start-build haproxy-router-base
-            oc start-build hypershift
-            oc start-build ibm-cloud-controller-manager
-            oc start-build ibmcloud-machine-controllers
-            oc start-build ibm-vpc-block-csi-driver-operator
-            oc start-build ibm-vpc-block-csi-driver
-            oc start-build ibm-vpc-node-label-updater
-            oc start-build insights-operator
-            oc wait --timeout=30m --for=condition=Running=False builds --all
-            FAILED_BUILDS=$(oc get builds -o=jsonpath='{.items[?(@.status.phase=="Failed")].metadata.name}')
-            if [[ -n "${FAILED_BUILDS}" ]]; then
-              echo "Failed builds: ${FAILED_BUILDS}"
-              exit 1
-            fi
-    - name: build-batch-11
+        - name: buildconfigs
+          value:
+          - ibm-cloud-controller-manager
+          - ibm-vpc-block-csi-driver-operator
+          - ibm-vpc-block-csi-driver
+          - ibm-vpc-node-label-updater
+          - ibmcloud-machine-controllers
+          - insights-operator
+          - ironic-agent
+          - ironic-machine-os-downloader
+          - ironic-static-ip-manager
+          - k8s-prometheus-adapter
+    - name: batch-11
       runAfter:
-      - build-batch-10
+      - batch-10
       taskRef:
-        name: openshift-client
-        kind: ClusterTask
-      timeout: "2h0m0s"
+        name: batch-build
       params:
-        - name: SCRIPT
-          value: |
-            oc start-build ironic-agent
-            oc start-build ironic-machine-os-downloader
-            oc start-build ironic-static-ip-manager
-            oc start-build k8s-prometheus-adapter
-            oc start-build keepalived-ipfailover
-            oc start-build kube-proxy
-            oc start-build kube-rbac-proxy
-            oc start-build kube-state-metrics
-            oc start-build kube-storage-version-migrator
-            oc wait --timeout=30m --for=condition=Running=False builds --all
-            FAILED_BUILDS=$(oc get builds -o=jsonpath='{.items[?(@.status.phase=="Failed")].metadata.name}')
-            if [[ -n "${FAILED_BUILDS}" ]]; then
-              echo "Failed builds: ${FAILED_BUILDS}"
-              exit 1
-            fi
-    - name: build-batch-12
+        - name: buildconfigs
+          value:
+          - keepalived-ipfailover
+          - kube-proxy
+          - kube-rbac-proxy
+          - kube-state-metrics
+          - kube-storage-version-migrator
+          - local-storage-static-provisioner
+          - machine-api-operator
+          - machine-config-operator
+          - machine-image-customization-controller
+          - multus-admission-controller
+          - multus-cni
+    - name: batch-12
       runAfter:
-      - build-batch-11
+      - batch-11
       taskRef:
-        name: openshift-client
-        kind: ClusterTask
-      timeout: "2h0m0s"
+        name: batch-build
       params:
-        - name: SCRIPT
-          value: |
-            oc start-build local-storage-static-provisioner
-            oc start-build machine-api-operator
-            oc start-build machine-config-operator
-            oc start-build machine-image-customization-controller
-            oc start-build multus-admission-controller
-            oc start-build multus-cni
-            oc start-build multus-networkpolicy
-            oc start-build multus-route-override-cni
-            oc start-build multus-whereabouts-ipam-cni
-            oc start-build must-gather
-            oc wait --timeout=30m --for=condition=Running=False builds --all
-            FAILED_BUILDS=$(oc get builds -o=jsonpath='{.items[?(@.status.phase=="Failed")].metadata.name}')
-            if [[ -n "${FAILED_BUILDS}" ]]; then
-              echo "Failed builds: ${FAILED_BUILDS}"
-              exit 1
-            fi
-    - name: build-batch-13
+        - name: buildconfigs
+          value:
+          - multus-networkpolicy
+          - multus-route-override-cni
+          - multus-whereabouts-ipam-cni
+          - must-gather
+          - network-interface-bond-cni
+          - network-metrics-daemon
+          - nutanix-machine-controllers
+          - oauth-apiserver
+          - oauth-proxy
+          - oauth-server
+    - name: batch-13
       runAfter:
-      - build-batch-12
+      - batch-12
       taskRef:
-        name: openshift-client
-        kind: ClusterTask
-      timeout: "2h0m0s"
+        name: batch-build
       params:
-        - name: SCRIPT
-          value: |
-            oc start-build bond-cni
-            oc start-build network-metrics-daemon
-            oc start-build nutanix-machine-controllers
-            oc start-build oauth-apiserver
-            oc start-build oauth-proxy
-            oc start-build oauth-server
-            oc start-build oc-mirror
-            oc start-build oc
-            oc start-build openshift-apiserver
-            oc start-build openshift-controller-manager
-            oc wait --timeout=30m --for=condition=Running=False builds --all
-            FAILED_BUILDS=$(oc get builds -o=jsonpath='{.items[?(@.status.phase=="Failed")].metadata.name}')
-            if [[ -n "${FAILED_BUILDS}" ]]; then
-              echo "Failed builds: ${FAILED_BUILDS}"
-              exit 1
-            fi
-    - name: build-batch-14
+        - name: buildconfigs
+          value:
+          - oc-mirror
+          - oc
+          - openshift-apiserver
+          - openshift-controller-manager
+          - openshift-state-metrics
+          - openstack-cinder-csi-driver-operator
+          - openstack-cinder-csi-driver
+          - openstack-cloud-controller-manager
+          - openstack-machine-api-provider
+          - openstack-machine-controllers
+          - operator-lifecycle-manager
+    - name: batch-14
       runAfter:
-      - build-batch-13
+      - batch-13
       taskRef:
-        name: openshift-client
-        kind: ClusterTask
-      timeout: "2h0m0s"
+        name: batch-build
       params:
-        - name: SCRIPT
-          value: |
-            oc start-build openshift-state-metrics
-            oc start-build openstack-cinder-csi-driver-operator
-            oc start-build openstack-cinder-csi-driver
-            oc start-build openstack-cloud-controller-manager
-            oc start-build openstack-machine-api-provider
-            oc start-build openstack-machine-controllers
-            oc start-build operator-lifecycle-manager
-            oc start-build operator-marketplace
-            oc start-build ovirt-csi-driver-operator
-            oc start-build ovirt-csi-driver
-            oc wait --timeout=30m --for=condition=Running=False builds --all
-            FAILED_BUILDS=$(oc get builds -o=jsonpath='{.items[?(@.status.phase=="Failed")].metadata.name}')
-            if [[ -n "${FAILED_BUILDS}" ]]; then
-              echo "Failed builds: ${FAILED_BUILDS}"
-              exit 1
-            fi
-    - name: build-batch-15
+        - name: buildconfigs
+          value:
+          - operator-marketplace
+          - ovirt-csi-driver-operator
+          - ovirt-csi-driver
+          - ovirt-installer
+          - ovirt-machine-controllers
+          - pod
+          - powervs-cloud-controller-manager
+          - powervs-machine-controllers
+          - prom-label-proxy
+          - prometheus-alertmanager
+    - name: batch-15
       runAfter:
-      - build-batch-14
+      - batch-14
       taskRef:
-        name: openshift-client
-        kind: ClusterTask
-      timeout: "2h0m0s"
+        name: batch-build
       params:
-        - name: SCRIPT
-          value: |
-            oc start-build ovirt-installer
-            oc start-build ovirt-machine-controllers
-            oc start-build pod
-            oc start-build powervs-cloud-controller-manager
-            oc start-build powervs-machine-controllers
-            oc start-build prometheus-alertmanager
-            oc start-build prometheus-config-reloader
-            oc start-build prometheus-node-exporter
-            oc start-build prometheus-operator-admission-webhook
-            oc start-build prometheus-operator
-            oc wait --timeout=30m --for=condition=Running=False builds --all
-            FAILED_BUILDS=$(oc get builds -o=jsonpath='{.items[?(@.status.phase=="Failed")].metadata.name}')
-            if [[ -n "${FAILED_BUILDS}" ]]; then
-              echo "Failed builds: ${FAILED_BUILDS}"
-              exit 1
-            fi
-    - name: build-batch-16
+        - name: buildconfigs
+          value:
+          - prometheus-config-reloader
+          - prometheus-node-exporter
+          - prometheus-operator-admission-webhook
+          - prometheus-operator
+          - prometheus
+          - service-ca-operator
+          - telemeter
+          - thanos
+          - vsphere-cloud-controller-manager
+          - vsphere-cluster-api-controllers
+    - name: batch-16
       runAfter:
-      - build-batch-15
+      - batch-15
       taskRef:
-        name: openshift-client
-        kind: ClusterTask
-      timeout: "2h0m0s"
+        name: batch-build
       params:
-        - name: SCRIPT
-          value: |
-            oc start-build prometheus
-            oc start-build prom-label-proxy
-            oc start-build service-ca-operator
-            oc start-build telemeter
-            oc start-build thanos
-            oc start-build vertical-pod-autoscaler
-            oc start-build vsphere-cloud-controller-manager
-            oc start-build vsphere-cluster-api-controllers
-            oc start-build vsphere-csi-driver-operator
-            oc start-build vsphere-csi-driver-syncer
-            oc wait --timeout=30m --for=condition=Running=False builds --all
-            FAILED_BUILDS=$(oc get builds -o=jsonpath='{.items[?(@.status.phase=="Failed")].metadata.name}')
-            if [[ -n "${FAILED_BUILDS}" ]]; then
-              echo "Failed builds: ${FAILED_BUILDS}"
-              exit 1
-            fi
+        - name: buildconfigs
+          value:
+          - vsphere-csi-driver-operator
+          - vsphere-csi-driver-syncer
+          - vsphere-csi-driver
+          - vsphere-problem-detector
     - name: build-batch-17
       runAfter:
       - build-batch-16
@@ -468,8 +340,7 @@ spec:
       params:
         - name: SCRIPT
           value: |
-            oc start-build vsphere-csi-driver
-            oc start-build vsphere-problem-detector
+            oc start-build console
             oc start-build baremetal-installer
             oc start-build installer-artifacts
             oc start-build installer
