@@ -25,6 +25,7 @@ spec:
   strategy:
     type: Docker
     dockerStrategy:
+      imageOptimizationPolicy: SkipLayers
       dockerfilePath: Dockerfile
       buildArgs:
       - name: DIRECT_DOWNLOAD

@@ -24,6 +24,7 @@ spec:
   strategy:
     type: Docker
     dockerStrategy:
+      imageOptimizationPolicy: SkipLayers
       dockerfilePath: Dockerfile.assisted-installer-controller.ocp
       from:
         kind: "ImageStreamTag"

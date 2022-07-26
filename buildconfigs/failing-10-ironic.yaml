@@ -21,6 +21,7 @@ spec:
   strategy:
     type: Docker
     dockerStrategy:
+      imageOptimizationPolicy: SkipLayers
       dockerfilePath: Dockerfile.ocp
       from:
         kind: "ImageStreamTag"

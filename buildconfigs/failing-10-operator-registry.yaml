@@ -22,6 +22,7 @@ spec:
   strategy:
     type: Docker
     dockerStrategy:
+      imageOptimizationPolicy: SkipLayers
       dockerfilePath: operator-registry.Dockerfile
       from:
         kind: "ImageStreamTag"

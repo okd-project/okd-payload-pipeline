@@ -19,6 +19,7 @@ spec:
   strategy:
     type: Docker
     dockerStrategy:
+      imageOptimizationPolicy: SkipLayers
       dockerfilePath: Dockerfile.webhook
       from:
         kind: "ImageStreamTag"

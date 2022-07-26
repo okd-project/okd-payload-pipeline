@@ -20,6 +20,7 @@ spec:
   strategy:
     type: Docker
     dockerStrategy:
+      imageOptimizationPolicy: SkipLayers
       dockerfilePath: openshift-kuryr-controller-rhel8.Dockerfile
       from:
         kind: "ImageStreamTag"

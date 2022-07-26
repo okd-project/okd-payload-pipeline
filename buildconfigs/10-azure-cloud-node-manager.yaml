@@ -19,6 +19,7 @@ spec:
   strategy:
     type: Docker
     dockerStrategy:
+      imageOptimizationPolicy: SkipLayers
       dockerfilePath: openshift-hack/images/cloud-node-manager-openshift.Dockerfile
       from:
         kind: "ImageStreamTag"

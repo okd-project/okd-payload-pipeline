@@ -19,6 +19,7 @@ spec:
   strategy:
     type: Docker
     dockerStrategy:
+      imageOptimizationPolicy: SkipLayers
       dockerfilePath: images/installer-artifacts/Dockerfile.rhel
       buildArgs:
           - name: "TAGS"

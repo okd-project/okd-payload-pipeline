@@ -25,6 +25,7 @@ spec:
   strategy:
     type: Docker
     dockerStrategy:
+      imageOptimizationPolicy: SkipLayers
       dockerfilePath: openshift-hack/images/hyperkube/Dockerfile.centos9
       from:
         kind: "ImageStreamTag"

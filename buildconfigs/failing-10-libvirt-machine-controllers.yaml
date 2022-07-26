@@ -21,6 +21,7 @@ spec:
   strategy:
     type: Docker
     dockerStrategy:
+      imageOptimizationPolicy: SkipLayers
       dockerfilePath: Dockerfile.rhel7
       from:
         kind: "ImageStreamTag"

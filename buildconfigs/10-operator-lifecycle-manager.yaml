@@ -19,6 +19,7 @@ spec:
   strategy:
     type: Docker
     dockerStrategy:
+      imageOptimizationPolicy: SkipLayers
       dockerfilePath: operator-lifecycle-manager.Dockerfile
       from:
         kind: "ImageStreamTag"
