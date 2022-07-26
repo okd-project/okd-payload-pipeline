@@ -395,12 +395,10 @@ spec:
       params:
         - name: SCRIPT
           value: |
-            oc get istag -o name -n okd | grep "release" | cut -f2 -d ':' | tr '\n' ',' > /tmp/tags
             oc adm release new \
             --registry-config=$(workspaces.manifest-dir.path)/auth.json \
             --from-image-stream release \
             --insecure=true \
             --mirror $(params.result-mirror-location) \
             --to-image $(params.result-image) \
-            --name=$(params.result-image-name) \
-            --include=`cat /tmp/tags`
+            --name=$(params.result-image-name)
