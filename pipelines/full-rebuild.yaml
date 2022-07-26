@@ -330,9 +330,9 @@ spec:
           - vsphere-csi-driver-syncer
           - vsphere-csi-driver
           - vsphere-problem-detector
-    - name: build-batch-17
+    - name: batch-17
       runAfter:
-      - build-batch-16
+      - batch-16
       taskRef:
         name: openshift-client
         kind: ClusterTask
@@ -351,9 +351,9 @@ spec:
               echo "Failed builds: ${FAILED_BUILDS}"
               exit 1
             fi
-    - name: build-batch-18
+    - name: batch-18
       runAfter:
-      - build-batch-17
+      - batch-17
       taskRef:
         name: openshift-client
         kind: ClusterTask
@@ -371,9 +371,9 @@ spec:
               echo "Failed builds: ${FAILED_BUILDS}"
               exit 1
             fi
-    - name: build-batch-19
+    - name: batch-19
       runAfter:
-      - build-batch-18
+      - batch-18
       taskRef:
         name: openshift-client
         kind: ClusterTask
@@ -384,7 +384,7 @@ spec:
             oc start-build tests -w
     - name: new-release
       runAfter:
-      - build-batch-19
+      - batch-19
       taskRef:
         name: openshift-client
         kind: ClusterTask
