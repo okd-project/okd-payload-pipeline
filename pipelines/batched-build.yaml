@@ -24,7 +24,31 @@ spec:
   workspaces:
     - name: push-credentials
   tasks:
+    - name: initial-import
+      taskRef:
+        name: openshift-client
+        kind: ClusterTask
+      params:
+        - name: SCRIPT
+          value: |
+            oc adm release mirror \
+              $(params.initial-image) \
+              --to-image-stream release
+    - name: prepare-build-images
+      runAfter:
+      - initial-import
+      taskRef:
+        name: openshift-client
+        kind: ClusterTask
+      params:
+        - name: SCRIPT
+          value: |
+            oc start-build builder -w && \
+            oc start-build forked-dockerfiles -w && \
+            oc start-build base -w
     - name: batch-01
+      runAfter:
+      - prepare-build-images
       taskRef:
         name: batch-build
       params:
@@ -63,8 +87,6 @@ spec:
           - thanos
     - name: new-release
       runAfter:
-      - batch-01
-      - batch-02
       - batch-03
       taskRef:
         name: openshift-client
