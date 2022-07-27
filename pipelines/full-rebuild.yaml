@@ -257,7 +257,7 @@ spec:
           - multus-route-override-cni
           - multus-whereabouts-ipam-cni
           - must-gather
-          - network-interface-bond-cni
+          - bond-cni
           - network-metrics-daemon
           - nutanix-machine-controllers
           - oauth-apiserver
