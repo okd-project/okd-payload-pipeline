@@ -330,6 +330,7 @@ spec:
           - vsphere-csi-driver-syncer
           - vsphere-csi-driver
           - vsphere-problem-detector
+          - cluster-node-tuning-operator
     - name: batch-17
       runAfter:
       - batch-16
