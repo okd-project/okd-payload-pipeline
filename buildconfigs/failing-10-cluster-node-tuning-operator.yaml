@@ -35,11 +35,17 @@ spec:
           name: 'release:base'
         as:
           - 'registry.ci.openshift.org/ocp/builder:rhel-8-base-openshift-4.12'
+      - from:
+          kind: ImageStreamTag
+          name: 'release:forked-dockerfiles'
+        paths:
+        - sourcePath: /code/cluster-node-tuning-operator/Dockerfile.centos9
+          destinationDir: "."
   strategy:
     type: Docker
     dockerStrategy:
       imageOptimizationPolicy: SkipLayers
-      dockerfilePath: Dockerfile.rhel8
+      dockerfilePath: Dockerfile.centos9
       from:
         kind: "ImageStreamTag"
         name: "release:base"
