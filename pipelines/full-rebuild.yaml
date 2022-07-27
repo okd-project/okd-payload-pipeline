@@ -364,13 +364,13 @@ spec:
       runAfter:
       - batch-18
       taskRef:
-        name: openshift-client
-        kind: ClusterTask
+        name: batch-build
       timeout: "2h0m0s"
       params:
-        - name: SCRIPT
-          value: |
-            oc start-build tests -w
+        - name: buildconfigs
+          value:
+          - tests
+          - network-tools
     - name: new-release
       runAfter:
       - batch-19
