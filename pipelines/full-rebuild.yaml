@@ -358,6 +358,7 @@ spec:
           - agent-installer-csr-approver
           - cli-artifacts
           - tools
+          - haproxy-router
     - name: batch-19
       runAfter:
       - batch-18
