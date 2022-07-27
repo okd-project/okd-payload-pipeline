@@ -335,43 +335,29 @@ spec:
       runAfter:
       - batch-16
       taskRef:
-        name: openshift-client
-        kind: ClusterTask
+        name: batch-build
       timeout: "2h0m0s"
       params:
-        - name: SCRIPT
-          value: |
-            oc start-build console
-            oc start-build baremetal-installer
-            oc start-build installer-artifacts
-            oc start-build installer
-            oc start-build hyperkube
-            oc wait --timeout=30m --for=condition=Running=False builds --all
-            FAILED_BUILDS=$(oc get builds -o=jsonpath='{.items[?(@.status.phase=="Failed")].metadata.name}')
-            if [[ -n "${FAILED_BUILDS}" ]]; then
-              echo "Failed builds: ${FAILED_BUILDS}"
-              exit 1
-            fi
+        - name: buildconfigs
+          value:
+          - console
+          - baremetal-installer
+          - installer-artifacts
+          - installer
+          - hyperkube
     - name: batch-18
       runAfter:
       - batch-17
       taskRef:
-        name: openshift-client
-        kind: ClusterTask
+        name: batch-build
       timeout: "2h0m0s"
       params:
-        - name: SCRIPT
-          value: |
-            oc start-build agent-installer-api-server
-            oc start-build agent-installer-csr-approver
-            oc start-build cli-artifacts
-            oc start-build tools
-            oc wait --timeout=30m --for=condition=Running=False builds --all
-            FAILED_BUILDS=$(oc get builds -o=jsonpath='{.items[?(@.status.phase=="Failed")].metadata.name}')
-            if [[ -n "${FAILED_BUILDS}" ]]; then
-              echo "Failed builds: ${FAILED_BUILDS}"
-              exit 1
-            fi
+        - name: buildconfigs
+          value:
+          - agent-installer-api-server
+          - agent-installer-csr-approver
+          - cli-artifacts
+          - tools
     - name: batch-19
       runAfter:
       - batch-18
