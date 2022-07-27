@@ -359,6 +359,7 @@ spec:
           - cli-artifacts
           - tools
           - haproxy-router
+          - ovn-kubernetes
     - name: batch-19
       runAfter:
       - batch-18

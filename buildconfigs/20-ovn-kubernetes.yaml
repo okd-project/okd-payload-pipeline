@@ -1,0 +1,41 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: ovn-kubernetes
+  namespace: okd
+spec:
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/openshift/ovn-kubernetes'
+      ref: release-4.12
+    contextDir: .
+    images:
+      - from:
+          kind: ImageStreamTag
+          name: 'release:builder'
+        as:
+          - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.12'
+      - from:
+          kind: ImageStreamTag
+          name: 'release:cli'
+        as:
+          - 'registry.ci.openshift.org/ocp/4.12:cli'
+      - from:
+          kind: ImageStreamTag
+          name: 'release:forked-dockerfiles'
+        paths:
+        - sourcePath: /code/ovn-kubernetes/Dockerfile.centos9
+          destinationDir: "."
+  strategy:
+    type: Docker
+    dockerStrategy:
+      imageOptimizationPolicy: SkipLayers
+      dockerfilePath: Dockerfile.centos9
+      from:
+        kind: "ImageStreamTag"
+        name: "release:base"
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'release:ovn-kubernetes'
