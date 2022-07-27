@@ -42,7 +42,7 @@ RUN INSTALL_PKGS=" \
 	tcpdump iputils \
 	libreswan \
 	ethtool conntrack-tools \
-	centos-release-nfv-openvswitch
+	centos-release-nfv-openvswitch \
 	" && \
 	yum install -y --setopt=tsflags=nodocs --setopt=skip_missing_names_on_install=False $INSTALL_PKGS && \
 	yum install -y --setopt=tsflags=nodocs --setopt=skip_missing_names_on_install=False "openvswitch2.17 = $ovsver" "openvswitch2.17-devel = $ovsver" "python3-openvswitch2.17 = $ovsver" "openvswitch2.17-ipsec = $ovsver" && \
