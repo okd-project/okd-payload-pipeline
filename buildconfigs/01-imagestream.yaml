@@ -6,3 +6,10 @@ metadata:
 spec:
   lookupPolicy:
     local: true
+  tags:
+    - name: rhel-coreos
+      from:
+        kind: DockerImage
+        name: quay.io/coreos-assembler/fcos:testing-devel
+      referencePolicy:
+        type: Source
