@@ -345,6 +345,7 @@ spec:
           - installer-artifacts
           - installer
           - hyperkube
+          - hyperkube-rpms
     - name: batch-18
       runAfter:
       - batch-17

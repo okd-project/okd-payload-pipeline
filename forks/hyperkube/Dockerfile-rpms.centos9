@@ -1,0 +1,12 @@
+FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.11 AS builder
+WORKDIR /go/src/k8s.io/kubernetes
+RUN yum install -y --setopt=tsflags=nodocs --setopt=skip_missing_names_on_install=False rpm-build createrepo bsdtar krb5-devel rsync && yum clean all
+COPY . .
+RUN ./openshift-hack/build-rpms.sh
+
+FROM registry.ci.openshift.org/ocp/4.11:base
+COPY --from=builder /go/src/k8s.io/kubernetes/_output/local/releases/rpms/*.rpm /srv/repo/
+LABEL io.k8s.display-name="OpenShift Kubernetes Server Commands" \
+      io.k8s.description="OpenShift is a platform for developing, building, and deploying containerized applications." \
+      io.openshift.tags="openshift,hyperkube" \
+      io.openshift.build.versions="kubernetes=1.24.0"

@@ -8,7 +8,7 @@ spec:
     - name: initial-image
       type: string
       description: Initial image to import
-      default: registry.ci.openshift.org/origin/release:4.12.0-0.okd-2022-07-25-043310
+      default: quay.io/vrutkovs/okd-release:4.12.0-0.okd-centos9-full-rebuild
     - name: result-mirror-location
       type: string
       description: Location to mirror resulting images
@@ -24,70 +24,7 @@ spec:
   workspaces:
     - name: push-credentials
   tasks:
-    - name: initial-import
-      taskRef:
-        name: openshift-client
-        kind: ClusterTask
-      params:
-        - name: SCRIPT
-          value: |
-            oc adm release mirror \
-              $(params.initial-image) \
-              --to-image-stream release
-    - name: prepare-build-images
-      runAfter:
-      - initial-import
-      taskRef:
-        name: openshift-client
-        kind: ClusterTask
-      params:
-        - name: SCRIPT
-          value: |
-            oc start-build builder -w && \
-            oc start-build forked-dockerfiles -w && \
-            oc start-build base -w
-    - name: batch-01
-      runAfter:
-      - prepare-build-images
-      taskRef:
-        name: batch-build
-      params:
-        - name: buildconfigs
-          value:
-          - ovirt-machine-controllers
-          - ovirt-machine-controllers
-          - pod
-          - powervs-cloud-controller-manager
-          - powervs-machine-controllers
-    - name: batch-02
-      runAfter:
-      - batch-01
-      taskRef:
-        name: batch-build
-      params:
-        - name: buildconfigs
-          value:
-          - prom-label-proxy
-          - prometheus-alertmanager
-          - prometheus-config-reloader
-          - prometheus-node-exporter
-          - prometheus-operator-admission-webhook
-    - name: batch-03
-      runAfter:
-      - batch-02
-      taskRef:
-        name: batch-build
-      params:
-        - name: buildconfigs
-          value:
-          - prometheus-operator
-          - prometheus
-          - service-ca-operator
-          - telemeter
-          - thanos
     - name: new-release
-      runAfter:
-      - batch-03
       taskRef:
         name: openshift-client
         kind: ClusterTask
