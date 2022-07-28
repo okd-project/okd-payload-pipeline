@@ -7,8 +7,8 @@ spec:
   source:
     type: Git
     git:
-      uri: 'https://github.com/openshift/machine-config-operator'
-      ref: layering
+      uri: 'https://github.com/vrutkovs/machine-config-operator'
+      ref: layering-okd
     contextDir: .
     images:
       - from:
