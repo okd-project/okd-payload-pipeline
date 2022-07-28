@@ -20,7 +20,7 @@ RUN curl -o /srv/repo/crio.rpm -L https://download.opensuse.org/repositories/dev
       glusterfs \
       glusterfs-fuse \
     && rpm -Uvh /srv/repo/*.rpm \
-    && rm -rf /var/cache \
+    && rm -rf /var/cache
 LABEL io.openshift.release.operator=true \
       io.openshift.build.version-display-names="machine-os=Fedora CoreOS" \
       io.openshift.build.versions="machine-os=412.36.0"

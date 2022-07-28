@@ -1,0 +1,31 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: new-release
+  namespace: okd
+spec:
+  params:
+    - name: release-mirror-location
+      type: string
+      description: Location to mirror resulting images
+    - name: release-image
+      type: string
+      description: Resulting release location
+    - name: release-image-name
+      type: string
+      description: Internal release name
+  steps:
+    - name: new-release
+      image: image-registry.openshift-image-registry.svc:5000/openshift/cli:latest
+      script: |
+        oc adm release new \
+            --registry-config=$(workspaces.credentials.path)/auth.json \
+            --from-image-stream release \
+            --insecure=true \
+            --mirror $(params.release-mirror-location) \
+            --to-image $(params.release-image) \
+            --name=$(params.release-image-name)
+  workspaces:
+    - name: credentials
+      description: The folder where we write the message to
+      mountPath: /credentials
