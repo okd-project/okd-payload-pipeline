@@ -23,6 +23,11 @@ spec:
           - 'registry.ci.openshift.org/origin/4.12:machine-config-operator'
       - from:
           kind: ImageStreamTag
+          name: 'release:cli'
+        as:
+          - 'registry.ci.openshift.org/origin/4.12:cli'
+      - from:
+          kind: ImageStreamTag
           name: 'release:forked-dockerfiles'
         paths:
         - sourcePath: /code/machine-os-content/Dockerfile.centos9
