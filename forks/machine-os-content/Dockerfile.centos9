@@ -2,7 +2,7 @@ FROM registry.ci.openshift.org/origin/4.12:machine-config-operator as mcd
 FROM registry.ci.openshift.org/origin/4.12:hyperkube-rpms as hyperkube-rpms
 FROM registry.ci.openshift.org/origin/4.12:cli as cli
 
-FROM quay.io/coreos-assembler/fcos:testing-devel
+FROM quay.io/coreos-assembler/fcos:stable
 WORKDIR /tmp
 COPY manifests/ /manifests/
 COPY bootstrap/ /bootstrap/

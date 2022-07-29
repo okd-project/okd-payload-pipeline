@@ -10,6 +10,6 @@ spec:
     - name: rhel-coreos
       from:
         kind: DockerImage
-        name: quay.io/coreos-assembler/fcos:testing-devel
+        name: quay.io/coreos-assembler/fcos:stable
       referencePolicy:
         type: Source

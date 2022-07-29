@@ -28,6 +28,11 @@ spec:
           - 'registry.ci.openshift.org/origin/4.12:cli'
       - from:
           kind: ImageStreamTag
+          name: 'release:rhel-coreos'
+        as:
+          - 'quay.io/coreos-assembler/fcos:stable'
+      - from:
+          kind: ImageStreamTag
           name: 'release:forked-dockerfiles'
         paths:
         - sourcePath: /code/machine-os-content/Dockerfile.centos9
