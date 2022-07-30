@@ -241,7 +241,7 @@ spec:
           - kube-storage-version-migrator
           - local-storage-static-provisioner
           - machine-api-operator
-          - machine-config-operator
+          - machine-config-operator-layering
           - machine-image-customization-controller
           - multus-admission-controller
           - multus-cni
@@ -372,6 +372,7 @@ spec:
           value:
           - tests
           - network-tools
+          - machine-os-content
     - name: new-release
       runAfter:
       - batch-19
