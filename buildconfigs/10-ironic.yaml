@@ -3,8 +3,6 @@ kind: BuildConfig
 metadata:
   name: ironic
   namespace: okd
-  failureDescription: |
-    /boot/efi/EFI/redhat/grubx64.efi: No such file or directory
 spec:
   source:
     type: Git
@@ -15,14 +13,19 @@ spec:
     images:
       - from:
           kind: ImageStreamTag
-          name: 'release:builder'
+          name: 'tools:fedora36'
         as:
-          - 'registry.ci.openshift.org/ocp/builder:rhel-9-base-openshift-4.12'
+          - 'fedora:35'
+      - from:
+          kind: ImageStreamTag
+          name: 'tools:centos9'
+        as:
+          - 'quay.io/centos/centos:stream8'
   strategy:
     type: Docker
     dockerStrategy:
       imageOptimizationPolicy: SkipLayers
-      dockerfilePath: Dockerfile.ocp
+      dockerfilePath: Dockerfile.okd
       from:
         kind: "ImageStreamTag"
         name: "release:base"

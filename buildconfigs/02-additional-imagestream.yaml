@@ -14,3 +14,10 @@ spec:
         name: 'quay.io/centos/centos:stream9'
       referencePolicy:
         type: Local
+    - name: fedora36
+      annotations: null
+      from:
+        kind: DockerImage
+        name: 'quay.io/fedora/fedora:36'
+      referencePolicy:
+        type: Local
