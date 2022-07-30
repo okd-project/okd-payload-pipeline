@@ -3,8 +3,6 @@ kind: BuildConfig
 metadata:
   name: libvirt-machine-controllers
   namespace: okd
-  failureDescription: |
-    Error: Unable to find a match: libvirt-devel
 spec:
   source:
     type: Git
@@ -18,11 +16,17 @@ spec:
           name: 'release:builder'
         as:
           - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.12'
+      - from:
+          kind: ImageStreamTag
+          name: 'release:forked-dockerfiles'
+        paths:
+        - sourcePath: /code/libvirt-machine-controllers/Dockerfile.centos9
+          destinationDir: "."
   strategy:
     type: Docker
     dockerStrategy:
       imageOptimizationPolicy: SkipLayers
-      dockerfilePath: Dockerfile.rhel7
+      dockerfilePath: Dockerfile.centos9
       from:
         kind: "ImageStreamTag"
         name: "release:base"

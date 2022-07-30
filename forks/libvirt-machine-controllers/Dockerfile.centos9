@@ -1,0 +1,17 @@
+FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.12 AS builder
+RUN sed -i '/\[crb\]/,/^ *\[/ s/enabled=0/enabled=1/' /etc/yum.repos.d/centos.repo
+RUN yum install -y libvirt-devel
+
+WORKDIR /go/src/github.com/openshift/cluster-api-provider-libvirt
+COPY . .
+RUN go build -o machine-controller-manager ./cmd/manager
+
+FROM registry.ci.openshift.org/ocp/4.12:base
+RUN sed -i '/\[crb\]/,/^ *\[/ s/enabled=0/enabled=1/' /etc/yum.repos.d/centos.repo
+RUN INSTALL_PKGS=" \
+      libvirt-libs openssh-clients xorriso \
+      " && \
+    yum install -y $INSTALL_PKGS && \
+    rpm -V $INSTALL_PKGS && \
+    yum clean all
+COPY --from=builder /go/src/github.com/openshift/cluster-api-provider-libvirt/machine-controller-manager /
