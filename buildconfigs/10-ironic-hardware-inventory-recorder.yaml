@@ -3,8 +3,6 @@ kind: BuildConfig
 metadata:
   name: ironic-hardware-inventory-recorder
   namespace: okd
-  failureDescription: |
-    No match for argument: python3-hardware
 spec:
   source:
     type: Git
@@ -12,11 +10,23 @@ spec:
       uri: 'https://github.com/openshift/ironic-hardware-inventory-recorder-image'
       ref: release-4.12
     contextDir: .
+    images:
+      - from:
+          kind: ImageStreamTag
+          name: 'release:builder'
+        as:
+          - 'registry.ci.openshift.org/ocp/builder:rhel-8-base-openshift-4.11'
+      - from:
+          kind: ImageStreamTag
+          name: 'release:forked-dockerfiles'
+        paths:
+        - sourcePath: /code/ironic-hardware-inventory-recorder/Dockerfile.centos9
+          destinationDir: "."
   strategy:
     type: Docker
     dockerStrategy:
       imageOptimizationPolicy: SkipLayers
-      dockerfilePath: Dockerfile.ocp
+      dockerfilePath: Dockerfile.centos9
       from:
         kind: "ImageStreamTag"
         name: "release:base"
