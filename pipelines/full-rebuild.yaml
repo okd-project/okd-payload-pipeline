@@ -331,6 +331,8 @@ spec:
           - vsphere-csi-driver
           - vsphere-problem-detector
           - cluster-node-tuning-operator
+          - ironic
+          - ironic-hardware-inventory-recorder
     - name: batch-17
       runAfter:
       - batch-16
@@ -361,6 +363,7 @@ spec:
           - tools
           - haproxy-router
           - ovn-kubernetes
+          - machine-os-images
     - name: batch-19
       runAfter:
       - batch-18
