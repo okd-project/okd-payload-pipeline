@@ -3,9 +3,6 @@ kind: BuildConfig
 metadata:
   name: baremetal-installer
   namespace: okd
-  failureDescription: |
-    No match for argument: libvirt-devel-8.0.0
-    Error: Unable to find a match: libvirt-devel-8.0.0
 spec:
   source:
     type: Git

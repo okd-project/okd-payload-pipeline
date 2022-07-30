@@ -3,8 +3,6 @@ kind: BuildConfig
 metadata:
   name: agent-installer-orchestrator
   namespace: okd
-  failureDescription: |
-    needs cli
 spec:
   source:
     type: Git
