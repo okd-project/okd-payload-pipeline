@@ -3,9 +3,6 @@ kind: BuildConfig
 metadata:
   name: operator-registry
   namespace: okd
-  failureDescription: |
-    cgo: C compiler "o64-clang" not found: exec: "o64-clang": executable file not found in $PATH
-    make: *** [Makefile:86: cross] Error 2
 spec:
   source:
     type: Git
@@ -19,11 +16,17 @@ spec:
           name: 'release:builder'
         as:
           - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.12'
+      - from:
+          kind: ImageStreamTag
+          name: 'release:forked-dockerfiles'
+        paths:
+        - sourcePath: /code/operator-registry/Dockerfile.centos9
+          destinationDir: "."
   strategy:
     type: Docker
     dockerStrategy:
       imageOptimizationPolicy: SkipLayers
-      dockerfilePath: operator-registry.Dockerfile
+      dockerfilePath: Dockerfile.centos9
       from:
         kind: "ImageStreamTag"
         name: "release:base"
