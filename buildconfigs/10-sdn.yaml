@@ -18,11 +18,17 @@ spec:
           name: 'release:builder'
         as:
           - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.11'
+      - from:
+          kind: ImageStreamTag
+          name: 'release:forked-dockerfiles'
+        paths:
+        - sourcePath: /code/sdn/Dockerfile.centos9
+          destinationDir: "./images/sdn"
   strategy:
     type: Docker
     dockerStrategy:
       imageOptimizationPolicy: SkipLayers
-      dockerfilePath: images/sdn/Dockerfile.rhel
+      dockerfilePath: images/sdn/Dockerfile.centos9
       from:
         kind: "ImageStreamTag"
         name: "release:base"
