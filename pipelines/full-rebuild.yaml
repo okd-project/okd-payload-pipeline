@@ -187,7 +187,6 @@ spec:
           - csi-node-driver-registrar
           - csi-snapshot-controller
           - csi-snapshot-validation-webhook
-          - deployer
           - docker-builder
           - docker-registry
     - name: batch-09
@@ -366,6 +365,7 @@ spec:
           - haproxy-router
           - ovn-kubernetes
           - machine-os-images
+          - deployer
     - name: batch-19
       runAfter:
       - batch-18

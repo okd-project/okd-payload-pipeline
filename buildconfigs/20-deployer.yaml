@@ -10,12 +10,6 @@ spec:
       uri: 'https://github.com/openshift/oc'
       ref: release-4.12
     contextDir: images/deployer
-    images:
-      - from:
-          kind: ImageStreamTag
-          name: 'release:builder'
-        as:
-          - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.11'
   strategy:
     type: Docker
     dockerStrategy:
@@ -23,7 +17,7 @@ spec:
       dockerfilePath: Dockerfile.rhel
       from:
         kind: "ImageStreamTag"
-        name: "release:base"
+        name: "release:cli"
   output:
     to:
       kind: ImageStreamTag
