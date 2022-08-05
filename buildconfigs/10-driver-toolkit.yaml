@@ -3,10 +3,6 @@ kind: BuildConfig
 metadata:
   name: driver-toolkit
   namespace: okd
-  failureDescription: |
-    STEP 5/17: RUN echo ${RHEL_VERSION} > /etc/yum/vars/releasever && yum config-manager --best --setopt=install_weak_deps=False --save
-    No such command: config-manager. Please use /usr/bin/yum --help
-    It could be a YUM plugin command, try: "yum install 'dnf-command(config-manager)'"
 spec:
   source:
     type: Git
@@ -17,14 +13,15 @@ spec:
     images:
       - from:
           kind: ImageStreamTag
-          name: 'release:builder'
-        as:
-          - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.11'
+          name: 'release:forked-dockerfiles'
+        paths:
+          - sourcePath: /code/driver-toolkit/Dockerfile.centos9
+            destinationDir: "./"
   strategy:
     type: Docker
     dockerStrategy:
       imageOptimizationPolicy: SkipLayers
-      dockerfilePath: Dockerfile
+      dockerfilePath: Dockerfile.centos9
       from:
         kind: "ImageStreamTag"
         name: "release:base"
