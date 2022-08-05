@@ -334,6 +334,7 @@ spec:
           - ironic-hardware-inventory-recorder
           - libvirt-machine-controllers
           - operator-registry
+          - sdn
     - name: batch-17
       runAfter:
       - batch-16
