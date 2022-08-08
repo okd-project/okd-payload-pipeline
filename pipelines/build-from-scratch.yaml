@@ -1,0 +1,388 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: build-from-scratch
+  namespace: okd
+spec:
+  params:
+    - name: result-mirror-location
+      type: string
+      description: Location to mirror resulting images
+      default: quay.io/vrutkovs/okd-release
+    - name: result-image
+      type: string
+      description: Resulting release location
+      default: quay.io/vrutkovs/okd-release:4.12.0-0.okd-centos9-build-from-scratch
+    - name: result-image-name
+      type: string
+      description: Internal release name
+      default: 4.12.0-0.okd-centos9-build-from-scratch
+  workspaces:
+    - name: push-credentials
+  tasks:
+    - name: prepare-build-images
+      taskRef:
+        name: openshift-client
+        kind: ClusterTask
+      params:
+        - name: SCRIPT
+          value: |
+            oc start-build builder -w && \
+            oc start-build forked-dockerfiles -w && \
+            oc start-build base -w
+    - name: batch-01
+      runAfter:
+      - prepare-build-images
+      taskRef:
+        name: batch-build
+      params:
+        - name: buildconfigs
+          value:
+          - agent-installer-node-agent
+          - agent-installer-orchestrator
+          - alibaba-cloud-controller-manager
+          - alibaba-cloud-csi-driver
+          - alibaba-disk-csi-driver-operator
+          - alibaba-machine-controllers
+          - apiserver-network-proxy
+          - aws-cloud-controller-manager
+          - aws-cluster-api-controllers
+          - aws-ebs-csi-driver-operator
+    - name: batch-02
+      runAfter:
+      - batch-01
+      taskRef:
+        name: batch-build
+      params:
+        - name: buildconfigs
+          value:
+          - aws-ebs-csi-driver
+          - aws-machine-controllers
+          - aws-pod-identity-webhook
+          - azure-cloud-controller-manager
+          - azure-cloud-node-manager
+          - azure-cluster-api-controllers
+          - azure-disk-csi-driver-operator
+          - azure-disk-csi-driver
+          - azure-file-csi-driver-operator
+          - azure-file-csi-driver
+    - name: batch-03
+      runAfter:
+      - batch-02
+      taskRef:
+        name: batch-build
+      params:
+        - name: buildconfigs
+          value:
+          - azure-machine-controllers
+          - baremetal-machine-controllers
+          - baremetal-operator
+          - baremetal-runtimecfg
+          - branding
+          - cloud-credential-operator
+          - cloud-network-config-controller
+          - cluster-authentication-operator
+          - cluster-autoscaler-operator
+          - cluster-autoscaler
+    - name: batch-04
+      runAfter:
+      - batch-03
+      taskRef:
+        name: batch-build
+      params:
+        - name: buildconfigs
+          value:
+          - cluster-baremetal-operator
+          - cluster-bootstrap
+          - cluster-capi-controllers
+          - cluster-capi-operator
+          - cluster-cloud-controller-manager-operator
+          - cluster-config-operator
+          - cluster-control-plane-machine-set-operator
+          - cluster-csi-snapshot-controller-operator
+          - cluster-dns-operator
+          - cluster-etcd-operator
+    - name: batch-05
+      runAfter:
+      - batch-04
+      taskRef:
+        name: batch-build
+      params:
+        - name: buildconfigs
+          value:
+          - cluster-image-registry-operator
+          - cluster-ingress-operator
+          - cluster-kube-apiserver-operator
+          - cluster-kube-cluster-api-operator
+          - cluster-kube-controller-manager-operator
+          - cluster-kube-scheduler-operator
+          - cluster-kube-storage-version-migrator-operator
+          - cluster-machine-approver
+          - cluster-monitoring-operator
+          - cluster-network-operator
+    - name: batch-06
+      runAfter:
+      - batch-05
+      taskRef:
+        name: batch-build
+      params:
+        - name: buildconfigs
+          value:
+          - cluster-openshift-apiserver-operator
+          - cluster-openshift-controller-manager-operator
+          - cluster-policy-controller
+          - cluster-samples-operator
+          - cluster-storage-operator
+          - cluster-update-keys
+          - cluster-version-operator
+          - configmap-reloader
+          - console-operator
+          - container-networking-plugins
+    - name: batch-07
+      runAfter:
+      - batch-06
+      taskRef:
+        name: batch-build
+      params:
+        - name: buildconfigs
+          value:
+          - contour-operator
+          - contour
+          - coredns
+          - csi-driver-manila-operator
+          - csi-driver-manila
+          - csi-driver-nfs
+          - csi-driver-shared-resource-operator
+          - csi-driver-shared-resource-webhook
+          - csi-driver-shared-resource
+          - csi-external-attacher
+    - name: batch-08
+      runAfter:
+      - batch-07
+      taskRef:
+        name: batch-build
+      params:
+        - name: buildconfigs
+          value:
+          - csi-external-provisioner
+          - csi-external-resizer
+          - csi-external-snapshotter
+          - csi-livenessprobe
+          - csi-node-driver-registrar
+          - csi-snapshot-controller
+          - csi-snapshot-validation-webhook
+          - docker-builder
+          - docker-registry
+    - name: batch-09
+      runAfter:
+      - batch-08
+      taskRef:
+        name: batch-build
+      params:
+        - name: buildconfigs
+          value:
+          - egress-router-cni
+          - etcd
+          - external-dns
+          - gcp-cloud-controller-manager
+          - gcp-cluster-api-controllers
+          - gcp-machine-controllers
+          - gcp-pd-csi-driver-operator
+          - gcp-pd-csi-driver
+          - haproxy-router-base
+          - hypershift
+    - name: batch-10
+      runAfter:
+      - batch-09
+      taskRef:
+        name: batch-build
+      params:
+        - name: buildconfigs
+          value:
+          - ibm-cloud-controller-manager
+          - ibm-vpc-block-csi-driver-operator
+          - ibm-vpc-block-csi-driver
+          - ibm-vpc-node-label-updater
+          - ibmcloud-machine-controllers
+          - insights-operator
+          - ironic-agent
+          - ironic-machine-os-downloader
+          - ironic-static-ip-manager
+          - k8s-prometheus-adapter
+    - name: batch-11
+      runAfter:
+      - batch-10
+      taskRef:
+        name: batch-build
+      params:
+        - name: buildconfigs
+          value:
+          - keepalived-ipfailover
+          - kube-proxy
+          - kube-rbac-proxy
+          - kube-state-metrics
+          - kube-storage-version-migrator
+          - local-storage-static-provisioner
+          - machine-api-operator
+          - machine-config-operator-layering
+          - machine-image-customization-controller
+          - multus-admission-controller
+          - multus-cni
+    - name: batch-12
+      runAfter:
+      - batch-11
+      taskRef:
+        name: batch-build
+      params:
+        - name: buildconfigs
+          value:
+          - multus-networkpolicy
+          - multus-route-override-cni
+          - multus-whereabouts-ipam-cni
+          - must-gather
+          - bond-cni
+          - network-metrics-daemon
+          - nutanix-machine-controllers
+          - oauth-apiserver
+          - oauth-proxy
+          - oauth-server
+    - name: batch-13
+      runAfter:
+      - batch-12
+      taskRef:
+        name: batch-build
+      params:
+        - name: buildconfigs
+          value:
+          - oc-mirror
+          - oc
+          - openshift-apiserver
+          - openshift-controller-manager
+          - openshift-state-metrics
+          - openstack-cinder-csi-driver-operator
+          - openstack-cinder-csi-driver
+          - openstack-cloud-controller-manager
+          - openstack-machine-api-provider
+          - openstack-machine-controllers
+          - operator-lifecycle-manager
+    - name: batch-14
+      runAfter:
+      - batch-13
+      taskRef:
+        name: batch-build
+      timeout: "2h0m0s"
+      params:
+        - name: buildconfigs
+          value:
+          - operator-marketplace
+          - ovirt-csi-driver-operator
+          - ovirt-csi-driver
+          - ovirt-installer
+          - ovirt-machine-controllers
+          - pod
+          - powervs-cloud-controller-manager
+          - powervs-machine-controllers
+          - prom-label-proxy
+          - prometheus-alertmanager
+    - name: batch-15
+      runAfter:
+      - batch-14
+      taskRef:
+        name: batch-build
+      timeout: "2h0m0s"
+      params:
+        - name: buildconfigs
+          value:
+          - prometheus-config-reloader
+          - prometheus-node-exporter
+          - prometheus-operator-admission-webhook
+          - prometheus-operator
+          - prometheus
+          - service-ca-operator
+          - telemeter
+          - thanos
+          - vsphere-cloud-controller-manager
+          - vsphere-cluster-api-controllers
+    - name: batch-16
+      runAfter:
+      - batch-15
+      taskRef:
+        name: batch-build
+      timeout: "2h0m0s"
+      params:
+        - name: buildconfigs
+          value:
+          - vsphere-csi-driver-operator
+          - vsphere-csi-driver-syncer
+          - vsphere-csi-driver
+          - vsphere-problem-detector
+          - cluster-node-tuning-operator
+          - ironic
+          - ironic-hardware-inventory-recorder
+          - libvirt-machine-controllers
+          - operator-registry
+          - sdn
+    - name: batch-17
+      runAfter:
+      - batch-16
+      taskRef:
+        name: batch-build
+      timeout: "2h0m0s"
+      params:
+        - name: buildconfigs
+          value:
+          - console
+          - baremetal-installer
+          - installer-artifacts
+          - installer
+          - hyperkube
+          - hyperkube-rpms
+    - name: batch-18
+      runAfter:
+      - batch-17
+      taskRef:
+        name: batch-build
+      timeout: "2h0m0s"
+      params:
+        - name: buildconfigs
+          value:
+          - agent-installer-api-server
+          - agent-installer-csr-approver
+          - cli-artifacts
+          - tools
+          - haproxy-router
+          - ovn-kubernetes
+          - machine-os-images
+          - deployer
+    - name: batch-19
+      runAfter:
+      - batch-18
+      taskRef:
+        name: batch-build
+      timeout: "2h0m0s"
+      params:
+        - name: buildconfigs
+          value:
+          - tests
+          - network-tools
+          - machine-os-content
+    - name: new-release
+      runAfter:
+      - batch-19
+      taskRef:
+        name: openshift-client
+        kind: ClusterTask
+      timeout: "2h0m0s"
+      workspaces:
+      - name: manifest-dir
+        workspace: push-credentials
+      params:
+        - name: SCRIPT
+          value: |
+            oc adm release new \
+            --registry-config=$(workspaces.manifest-dir.path)/auth.json \
+            --from-image-stream release \
+            --insecure=true \
+            --mirror $(params.result-mirror-location) \
+            --to-image $(params.result-image) \
+            --name=$(params.result-image-name)
