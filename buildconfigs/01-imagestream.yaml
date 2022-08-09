@@ -13,3 +13,15 @@ spec:
         name: quay.io/coreos-assembler/fcos:stable
       referencePolicy:
         type: Source
+    - name: kuryr-cni
+      from:
+        kind: DockerImage
+        name: registry.access.redhat.com/ubi9-minimal:9.0.0
+      referencePolicy:
+        type: Source
+    - name: kuryr-controller
+      from:
+        kind: DockerImage
+        name: registry.access.redhat.com/ubi9-minimal:9.0.0
+      referencePolicy:
+        type: Source
