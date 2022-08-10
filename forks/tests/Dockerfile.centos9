@@ -7,7 +7,7 @@ RUN make; \
 
 FROM registry.ci.openshift.org/ocp/4.11:tools
 COPY --from=builder /tmp/build/openshift-tests /usr/bin/
-RUN PACKAGES="git gzip util-linux" && \
+RUN PACKAGES="git gzip util-linux python3-six" && \
     if [ $HOSTTYPE = x86_64 ] || [ $HOSTTYPE = ppc64le ]; then PACKAGES="$PACKAGES python3-cinderclient"; fi && \
     yum install -y centos-release-openstack-yoga && \
     yum install --setopt=tsflags=nodocs -y $PACKAGES && \
