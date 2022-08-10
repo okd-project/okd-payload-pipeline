@@ -4,7 +4,7 @@ ARG DIRECT_DOWNLOAD=false
 
 USER root:root
 
-RUN dnf install -y jq wget https://kojihub.stream.centos.org/kojifiles/packages/coreos-installer/0.11.0/3.el8/x86_64/coreos-installer-0.11.0-3.el8.x86_64.rpm
+RUN dnf install -y jq wget https://kojihub.stream.centos.org/kojifiles/packages/coreos-installer/0.11.0/3.el8/$(arch)/coreos-installer-0.11.0-3.el8.$(arch).rpm
 COPY fetch_image.sh /usr/local/bin/
 RUN /usr/local/bin/fetch_image.sh
 
