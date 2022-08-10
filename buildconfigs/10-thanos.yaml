@@ -16,6 +16,12 @@ spec:
           name: 'release:builder'
         as:
           - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.17-openshift-4.11'
+      - from:
+          kind: ImageStreamTag
+          name: 'release:forked-dockerfiles'
+        paths:
+          - sourcePath: /code/thanos/Dockerfile.ocp
+            destinationDir: './'
   strategy:
     type: Docker
     dockerStrategy:
