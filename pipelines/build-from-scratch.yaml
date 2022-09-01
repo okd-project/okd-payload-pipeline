@@ -255,7 +255,8 @@ spec:
         - name: buildconfigs
           value:
           - oc-mirror
-          - oc
+          - cli
+          - cli-artifacts
           - openshift-apiserver
           - openshift-controller-manager
           - openshift-state-metrics
@@ -336,7 +337,6 @@ spec:
           - installer-artifacts
           - installer
           - hyperkube
-          - hyperkube-rpms
     - name: batch-18
       runAfter:
       - batch-17
@@ -348,7 +348,7 @@ spec:
           value:
           - agent-installer-api-server
           - agent-installer-csr-approver
-          - cli-artifacts
+          - artifacts
           - tools
           - haproxy-router
           - ovn-kubernetes

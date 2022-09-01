@@ -1,0 +1,87 @@
+ARG RPMBUILD_DIR="_output/local/releases"
+
+FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.11 AS builder
+
+ARG PKG_NAME
+ARG INSTALL_PKGS
+ARG SPEC_FILEPATH
+ARG PKG_GO_PATH
+ARG ARCHITECTURES
+ARG RPMBUILD_DIR
+ARG MAKE_ARGS
+RUN yum install -y --setopt=skip_missing_names_on_install=False rpm-build createrepo bsdtar rsync ${INSTALL_PKGS}
+
+WORKDIR ${PKG_GO_PATH}
+COPY . .
+
+RUN set -x; set -- $MAKE_ARGS; make "$@"
+
+RUN mkdir -p "${RPMBUILD_DIR}"/{BUILD,SOURCES,SPECS,SRPMS,rpms}; \
+    if [ x"$SKIP_RPM_BUILD" = x"yes" ]; then exit 0; fi; \
+    set -exo pipefail; \
+    SPEC_FILENAME=$(basename "$SPEC_FILEPATH"); \
+    # Set version variables
+    SOURCE_GIT_COMMIT=$(git rev-parse --short "HEAD^{commit}" 2>/dev/null); \
+    SOURCE_GIT_TAG=$(git describe --long --tags --abbrev=7 --match '*[0-9]*' | \
+      sed -E "s/${PKG_NAME}-([0-9]+\.[0-9]+\.[0-9]+)-.*/\1/" || echo "0.0.0-unknown-${SOURCE_GIT_COMMIT}"); \
+    SOURCE_GIT_TREE_STATE=$( ( [ ! -d ".git/" ] || git diff --quiet ) && echo 'clean' || echo 'dirty'); \
+    RPM_VERSION=$(echo "${SOURCE_GIT_TAG}" | \
+      sed -E 's/v([0-9]+\.[0-9]+\.[0-9]+)-.*/\1/').$(date -u +'%Y%m%d%H%M').${SOURCE_GIT_COMMIT}; \
+    # Prepare build archive
+    tar -czf "${RPMBUILD_DIR}/SOURCES/${PKG_NAME}-${RPM_VERSION}.tar.gz" \
+      --exclude=".git" --exclude=_output \
+      --transform="s|^|${PKG_NAME}-${RPM_VERSION}/|rSH" . ; \
+    cp -iv "${SPEC_FILEPATH}" "${RPMBUILD_DIR}/SPECS/${SPEC_FILENAME}"; \
+    # Build per-arch RPMs (or builder-host only)
+    for ARCH in ${ARCHITECTURES:-$(uname -m)}; do \
+      rpmbuild -ba --nodeps \
+        --target "$ARCH" \
+        --define "_topdir $(pwd)/${RPMBUILD_DIR}" \
+        --define "_rpmdir $(pwd)/${RPMBUILD_DIR}/rpms" \
+        --define "version ${RPM_VERSION}" \
+        --define "os_git_vars OS_GIT_VERSION='${SOURCE_GIT_TAG}' OS_GIT_COMMIT='${SOURCE_GIT_COMMIT}' \
+          OS_GIT_MAJOR='${SOURCE_GIT_MAJOR}' OS_GIT_MINOR='${SOURCE_GIT_MINOR}' \
+          OS_GIT_TREE_STATE='${SOURCE_GIT_TREE_STATE}'" \
+        "${RPMBUILD_DIR}/SPECS/${SPEC_FILENAME}"; \
+    done
+
+FROM registry.ci.openshift.org/ocp/4.11:cli
+
+ARG BIN_OUTPUT
+ARG PKG_GO_PATH
+ARG RPMBUILD_DIR
+
+ARG NAME
+ARG DESCRIPTION
+ARG TAGS
+
+ARG DIR_MAPPING="s/darwin_amd64/darwin/;s/darwin/mac/;s/windows_amd64/windows/"
+
+RUN if [ -n "${INSTALL_PKGS_RUNTIME}" ]; then \
+      yum install -y --setopt=tsflags=nodocs --setopt=skip_missing_names_on_install=False ${INSTALL_PKGS_RUNTIME}; \
+      yum clean all; \
+    fi
+
+COPY --from=builder ${PKG_GO_PATH}/${BIN_OUTPUT}/ /usr/share/openshift/
+
+RUN set -exo pipefail; arch_emachine=$(od -An -t x1 -j 0x12 -N 1 /bin/sh) \
+    find /usr/share/openshift -type f -executable -exec \
+      sh -c '[ "$(od -An -t x1 -j 0x12 -N 1 $0)" = "$arch_emachine" ]' {} \; -print | while  IFS= read -r f; \
+          do cp $f /usr/bin/; done && \
+    find /usr/share/openshift -mindepth 1 -type d | while IFS= read -r dir; \
+      do new_dir=$(echo "$dir" | sed "$DIR_MAPPING"); [ "$dir" = "$new_dir" ] || cp -r "$dir" "$new_dir"; done
+# The first loop will copy any executable for the arch of the container where it runs in /usr/bin.
+# It looks for executable files in /usr/share/openshift and verifies the ELF header's byte at offset 0x12 is the same as
+# the one in another container's binary. We use /bin/sh as the binary to compare with.
+# Ref: https://man7.org/linux/man-pages/man5/elf.5.html
+# The second loop will duplicate the dirs for mac and windows so that we can start consuming those binaries
+# in a standard way: e.g., getting the mac amd64 binary from darwin_amd64/, rather than
+# getting it from mac/ as we do for the linux/amd64 one (obtained from linux_amd64/)
+
+COPY --from=builder $PKG_GO_PATH/LICENSE /usr/share/openshift/LICENSE
+COPY --from=builder $PKG_GO_PATH/$RPMBUILD_DIR/rpms/ /srv/repo/
+COPY --from=builder $PKG_GO_PATH/$RPMBUILD_DIR/SOURCES/ /srv/zips/
+
+LABEL io.k8s.display-name="${NAME}" \
+      io.k8s.description="${DESCRIPTION}" \
+      io.openshift.tags="${TAGS}"

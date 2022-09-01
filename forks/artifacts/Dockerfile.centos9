@@ -1,0 +1,7 @@
+FROM release:base
+
+COPY --from=release:cli-artifacts /srv/ /srv/
+COPY --from=release:hyperkube /srv/ /srv/
+
+# TODO: the /srv/repo/ structure is slightly different than the origin-artifacts' structure and
+# this should lead to issues for the current consumers of this image: they should look for /srv/$(arch)/my_package.rpm
