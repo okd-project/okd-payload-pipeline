@@ -7,41 +7,24 @@ spec:
   source:
     type: Git
     git:
-      uri: 'https://github.com/vrutkovs/okd-machine-os'
-      ref: master-coreos-layering
+      uri: 'https://github.com/openshift/okd-machine-os'
+      ref: master # TODO: Change to release-4.12
     contextDir: .
     images:
       - from:
           kind: ImageStreamTag
-          name: 'release:hyperkube-rpms'
+          name: 'release:artifacts'
         as:
-          - 'registry.ci.openshift.org/origin/4.12:hyperkube-rpms'
+          - 'registry.ci.openshift.org/origin/4.12:artifacts'
       - from:
           kind: ImageStreamTag
-          name: 'release:machine-config-operator'
+          name: 'release:fedora-coreos'
         as:
-          - 'registry.ci.openshift.org/origin/4.12:machine-config-operator'
-      - from:
-          kind: ImageStreamTag
-          name: 'release:cli'
-        as:
-          - 'registry.ci.openshift.org/origin/4.12:cli'
-      - from:
-          kind: ImageStreamTag
-          name: 'release:rhel-coreos'
-        as:
-          - 'quay.io/coreos-assembler/fcos:stable'
-      - from:
-          kind: ImageStreamTag
-          name: 'release:forked-dockerfiles'
-        paths:
-        - sourcePath: /code/machine-os-content/Dockerfile.centos9
-          destinationDir: "."
+          - 'quay.io/coreos-assembler/fcos:testing-devel'
   strategy:
     type: Docker
     dockerStrategy:
-      imageOptimizationPolicy: SkipLayers
-      dockerfilePath: Dockerfile.centos9
+      imageOptimizationPolicy: None
   output:
     to:
       kind: ImageStreamTag
