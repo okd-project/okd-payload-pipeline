@@ -2,7 +2,6 @@ apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
   name: driver-toolkit
-  namespace: okd
 spec:
   source:
     type: Git

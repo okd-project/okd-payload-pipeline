@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: okd
+
+resources:
+- 01-batch-build-task.yaml
+- 01-new-release-task.yaml
+- batched-build.yaml
+- build-from-scratch.yaml
+- full-rebuild.yaml
+- mco-layered.yaml

@@ -2,7 +2,6 @@ apiVersion: image.openshift.io/v1
 kind: ImageStream
 metadata:
   name: tools
-  namespace: okd
 spec:
   lookupPolicy:
     local: true

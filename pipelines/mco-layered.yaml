@@ -2,7 +2,6 @@ apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: mco-layered-rebuild
-  namespace: okd
 spec:
   params:
     - name: initial-image

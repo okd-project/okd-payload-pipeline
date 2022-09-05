@@ -2,7 +2,6 @@ apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
   name: kuryr-cni
-  namespace: okd
   failureDescription: kuryr-cni-rpm-base fails to build
 spec:
   source:
@@ -11,12 +10,7 @@ spec:
       uri: 'https://github.com/openshift/kuryr-kubernetes'
       ref: release-4.12
     contextDir: .
-    images:
-      - from:
-          kind: ImageStreamTag
-          name: 'release:builder'
-        as:
-          - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.17-openshift-4.11'
+    images: []
   strategy:
     type: Docker
     dockerStrategy:

@@ -2,7 +2,6 @@ apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
   name: cluster-update-keys
-  namespace: okd
 spec:
   source:
     type: Git
@@ -10,6 +9,7 @@ spec:
       uri: 'https://github.com/openshift/cluster-update-keys'
       ref: release-4.12
     contextDir: .
+    images: []
   strategy:
     type: Docker
     dockerStrategy:

@@ -2,7 +2,6 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: new-release
-  namespace: okd
 spec:
   params:
     - name: release-mirror-location

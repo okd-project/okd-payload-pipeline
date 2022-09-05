@@ -2,7 +2,6 @@ apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
   name: cli
-  namespace: okd
 spec:
   source:
     type: Git
@@ -11,11 +10,6 @@ spec:
       ref: release-4.12
     contextDir: .
     images:
-      - from:
-          kind: ImageStreamTag
-          name: 'release:builder'
-        as:
-          - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.11'
       - from:
           kind: ImageStreamTag
           name: 'release:forked-dockerfiles'
