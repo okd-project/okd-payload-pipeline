@@ -1,13 +1,13 @@
 apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
-  name: hyperkube
+  name: cli
   namespace: okd
 spec:
   source:
     type: Git
     git:
-      uri: 'https://github.com/openshift/kubernetes'
+      uri: 'https://github.com/openshift/oc'
       ref: release-4.12
     contextDir: .
     images:
@@ -21,52 +21,51 @@ spec:
           name: 'release:forked-dockerfiles'
         paths:
           - sourcePath: /code/artifacts/Dockerfile.builder.centos9
-            destinationDir: "./openshift-hack/images/hyperkube"
+            destinationDir: "./images/cli-artifacts"
   strategy:
     type: Docker
     dockerStrategy:
       imageOptimizationPolicy: SkipLayers
-      dockerfilePath:  "./openshift-hack/images/hyperkube/Dockerfile.builder.centos9"
+      dockerfilePath: images/cli-artifacts/Dockerfile.builder.centos9
       from:
         kind: "ImageStreamTag"
         name: "release:base"
       env:
-        - name: WHAT
-          value: "cmd/kube-apiserver cmd/kube-controller-manager cmd/kube-scheduler cmd/kubelet cmd/watch-termination"
-        - name: KUBE_BUILD_PLATFORMS
-          value: ""
+        - name: GO_BUILD_BINDIR
+          value: "_output/bin/linux"
+        - name: SKIP_RPM_BUILD
+          value: "yes"
       buildArgs:
         - name: PKG_NAME
-          value: openshift
+          value: openshift-clients
         - name: SPEC_FILEPATH
-          value: ./openshift.spec
+          value: ./oc.spec
         - name: PKG_GO_PATH
-          value: /go/src/k8s.io/kubernetes
-        - name: ARCHITECTURES
-          value: ""
+          value: /go/src/github.com/openshift/oc
         - name: BIN_OUTPUT
           value: "_output/local/bin"
+        - name: ARCHITECTURES
+          value: ""
         - name: MAKE_ARGS
           value: >-
-            -e
+            -e --warn-undefined-variables
         - name: INSTALL_PKGS
           value: "krb5-devel"
         - name: INSTALL_PKGS_RUNTIME
-          value: "iproute"
+          value: ""
         - name: BIN_OUTPUT
-          value: "_output/local/bin"
+          value: "_output/bin"
         - name: NAME
-          value: OpenShift Kubernetes Server Commands
+          value: OpenShift Clients
         - name: DESCRIPTION
           value: >
             OpenShift is a platform for developing, 
             building, and deploying containerized applications.
         - name: TAGS
-          value: openshift,hyperkube
+          value: openshift,cli
         - name: VERSIONS
-          value: kubernetes=1.24.0
-          # TODO ^^ dynamic handling from the pipeline
+          value: ""
   output:
     to:
       kind: ImageStreamTag
-      name: 'release:hyperkube'
+      name: 'release:cli'
