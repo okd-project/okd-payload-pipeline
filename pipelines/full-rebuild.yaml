@@ -51,7 +51,7 @@ spec:
       taskRef:
         name: batch-build
       params:
-        - name: buildconfigs
+        - name: build_configs
           value:
           - agent-installer-node-agent
           - agent-installer-orchestrator
@@ -69,7 +69,7 @@ spec:
       taskRef:
         name: batch-build
       params:
-        - name: buildconfigs
+        - name: build_configs
           value:
           - aws-ebs-csi-driver
           - aws-machine-controllers
@@ -87,7 +87,7 @@ spec:
       taskRef:
         name: batch-build
       params:
-        - name: buildconfigs
+        - name: build_configs
           value:
           - azure-machine-controllers
           - baremetal-machine-controllers
@@ -105,7 +105,7 @@ spec:
       taskRef:
         name: batch-build
       params:
-        - name: buildconfigs
+        - name: build_configs
           value:
           - cluster-baremetal-operator
           - cluster-bootstrap
@@ -123,7 +123,7 @@ spec:
       taskRef:
         name: batch-build
       params:
-        - name: buildconfigs
+        - name: build_configs
           value:
           - cluster-image-registry-operator
           - cluster-ingress-operator
@@ -141,7 +141,7 @@ spec:
       taskRef:
         name: batch-build
       params:
-        - name: buildconfigs
+        - name: build_configs
           value:
           - cluster-openshift-apiserver-operator
           - cluster-openshift-controller-manager-operator
@@ -159,7 +159,7 @@ spec:
       taskRef:
         name: batch-build
       params:
-        - name: buildconfigs
+        - name: build_configs
           value:
           - contour-operator
           - contour
@@ -177,7 +177,7 @@ spec:
       taskRef:
         name: batch-build
       params:
-        - name: buildconfigs
+        - name: build_configs
           value:
           - csi-external-provisioner
           - csi-external-resizer
@@ -194,7 +194,7 @@ spec:
       taskRef:
         name: batch-build
       params:
-        - name: buildconfigs
+        - name: build_configs
           value:
           - egress-router-cni
           - etcd
@@ -212,7 +212,7 @@ spec:
       taskRef:
         name: batch-build
       params:
-        - name: buildconfigs
+        - name: build_configs
           value:
           - ibm-cloud-controller-manager
           - ibm-vpc-block-csi-driver-operator
@@ -230,7 +230,7 @@ spec:
       taskRef:
         name: batch-build
       params:
-        - name: buildconfigs
+        - name: build_configs
           value:
           - keepalived-ipfailover
           - kube-proxy
@@ -249,7 +249,7 @@ spec:
       taskRef:
         name: batch-build
       params:
-        - name: buildconfigs
+        - name: build_configs
           value:
           - multus-networkpolicy
           - multus-route-override-cni
@@ -267,7 +267,7 @@ spec:
       taskRef:
         name: batch-build
       params:
-        - name: buildconfigs
+        - name: build_configs
           value:
           - oc-mirror
           - cli
@@ -287,7 +287,7 @@ spec:
       taskRef:
         name: batch-build
       params:
-        - name: buildconfigs
+        - name: build_configs
           value:
           - operator-marketplace
           - ovirt-csi-driver-operator
@@ -305,7 +305,7 @@ spec:
       taskRef:
         name: batch-build
       params:
-        - name: buildconfigs
+        - name: build_configs
           value:
           - prometheus-config-reloader
           - prometheus-node-exporter
@@ -323,7 +323,7 @@ spec:
       taskRef:
         name: batch-build
       params:
-        - name: buildconfigs
+        - name: build_configs
           value:
           - vsphere-csi-driver-operator
           - vsphere-csi-driver-syncer
@@ -342,7 +342,7 @@ spec:
         name: batch-build
       timeout: "2h0m0s"
       params:
-        - name: buildconfigs
+        - name: build_configs
           value:
           - console
           - baremetal-installer
@@ -356,7 +356,7 @@ spec:
         name: batch-build
       timeout: "2h0m0s"
       params:
-        - name: buildconfigs
+        - name: build_configs
           value:
           - agent-installer-api-server
           - agent-installer-csr-approver
@@ -372,7 +372,7 @@ spec:
         name: batch-build
       timeout: "2h0m0s"
       params:
-        - name: buildconfigs
+        - name: build_configs
           value:
           - artifacts
           - tests
