@@ -23,7 +23,45 @@ patches:
     target:
       kind: BuildConfig
       labelSelector: "builder-replacement!=skip"
-
+  # TODO: tune resources req/lim
+  - patch: |-
+      - op: add
+        path: "/spec/resources"
+        value:
+          limits:
+            cpu: "4"
+            memory: 4Gi
+          requests:
+            cpu: "4"
+            memory: 4Gi
+    target:
+      kind: BuildConfig
+  - patch: |-
+      - op: add
+        path: "/spec/resources"
+        value:
+          limits:
+            cpu: "1"
+            memory: 1Gi
+          requests:
+            cpu: "1"
+            memory: 1Gi
+    target:
+      kind: BuildConfig
+      labelSelector: "resources-profile==low"
+  # Burstable QoS for high-resources profile
+  - patch: |-
+      - op: add
+        path: "/spec/resources"
+        value:
+          limits:
+            cpu: "6"
+          requests:
+            cpu: "6"
+            memory: 8Gi
+    target:
+      kind: BuildConfig
+      labelSelector: "resources-profile==high"
 resources:
   - 00-namespace.yaml
   - 01-imagestream.yaml
