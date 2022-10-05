@@ -14,7 +14,7 @@ spec:
     type: Docker
     dockerStrategy:
       imageOptimizationPolicy: SkipLayers
-      dockerfilePath: okd-golang-builder.Dockerfile
+      dockerfilePath: okd-builder.Dockerfile
       from:
         kind: "ImageStreamTag"
         name: "tools:centos9"
