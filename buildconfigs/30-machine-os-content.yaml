@@ -8,7 +8,7 @@ spec:
     type: Git
     git:
       uri: 'https://github.com/openshift/okd-machine-os'
-      ref: master # TODO: Change to release-4.12
+      ref: master
     contextDir: .
     images:
       - from:

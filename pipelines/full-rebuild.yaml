@@ -240,7 +240,7 @@ spec:
           - kube-storage-version-migrator
           - local-storage-static-provisioner
           - machine-api-operator
-          - machine-config-operator-layering
+          - machine-config-operator
           - machine-image-customization-controller
           - multus-admission-controller
           - multus-cni
