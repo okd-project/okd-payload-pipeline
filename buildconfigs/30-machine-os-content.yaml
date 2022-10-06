@@ -20,7 +20,7 @@ spec:
           kind: ImageStreamTag
           name: 'release:fedora-coreos'
         as:
-          - 'quay.io/coreos-assembler/fcos:testing-devel'
+          - 'quay.io/coreos-assembler/fcos:next-devel'
   strategy:
     type: Docker
     dockerStrategy:
