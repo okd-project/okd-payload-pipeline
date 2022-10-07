@@ -55,7 +55,7 @@ spec:
       params:
         - name: SCRIPT
           value: |
-            oc start-build machine-config-operator-layering -w
+            oc start-build machine-config-operator -w
     - name: kubelet
       runAfter:
       - prepare-build-images
