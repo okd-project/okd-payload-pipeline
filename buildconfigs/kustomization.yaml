@@ -7,11 +7,12 @@ patches:
   - patch: |-
       - op: add
         path: "/spec/source/images/-"
-        value:  
+        value:
            from:
               kind: "ImageStreamTag"
               name: "release:builder"
            as:
+              - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.19-openshift-4.12'
               - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.12'
               - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.11'
               - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.17-openshift-4.11'
