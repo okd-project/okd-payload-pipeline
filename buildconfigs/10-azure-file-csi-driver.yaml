@@ -2,6 +2,8 @@ apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
   name: azure-file-csi-driver
+  labels:
+    resources-profile: high
 spec:
   source:
     type: Git

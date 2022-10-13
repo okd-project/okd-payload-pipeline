@@ -2,6 +2,8 @@ apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
   name: machine-config-operator
+  labels:
+    change-build-arg-tags: "true"
 spec:
   source:
     type: Git

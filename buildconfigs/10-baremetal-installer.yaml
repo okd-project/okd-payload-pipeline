@@ -2,6 +2,9 @@ apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
   name: baremetal-installer
+  labels:
+    change-build-arg-tags: "true"
+    resources-profile: high
 spec:
   source:
     type: Git

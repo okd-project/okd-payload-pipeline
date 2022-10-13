@@ -2,6 +2,9 @@ apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
   name: installer-artifacts
+  labels:
+    resources-profile: high
+    change-build-arg-tags: "true"
 spec:
   source:
     type: Git

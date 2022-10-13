@@ -2,6 +2,8 @@ apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
   name: cli-artifacts
+  labels:
+    resources-profile: high
 spec:
   source:
     type: Git
@@ -48,7 +50,7 @@ spec:
           value: OpenShift Clients
         - name: DESCRIPTION
           value: >
-            OpenShift is a platform for developing, 
+            OpenShift is a platform for developing,
             building, and deploying containerized applications.
         - name: TAGS
           value: openshift,cli
