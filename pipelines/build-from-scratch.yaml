@@ -239,7 +239,6 @@ spec:
           value:
           - tests
           - network-tools
-          - machine-os-content
     - name: new-release
       timeout: "2h0m0s"
       runAfter:

@@ -4,6 +4,9 @@ kind: Kustomization
 namespace: okd
 
 patches:
+    # The next patch will replace the build-stage images used by the upstream repositories' Dockerfiles with the okd builder one.
+    # In particular, each stage extending from an image contained in the `as` array below will start from the ImageStreamTag release:builder
+    # In the future, we may change this to be more specific to the builder image features. E.g., we may need one builder image per golang version.
   - patch: |-
       - op: add
         path: "/spec/source/images/-"
@@ -246,7 +249,7 @@ resources:
   - 20-machine-os-images.yaml
   - 20-ovn-kubernetes.yaml
   - 20-tools.yaml
-  - 30-machine-os-content.yaml
+  - 30-fedora-coreos.yaml
   - 30-network-tools.yaml
   - 30-tests.yaml
   - failing-20-kuryr-cni-base.yaml

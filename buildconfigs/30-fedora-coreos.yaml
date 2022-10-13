@@ -1,7 +1,7 @@
 apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
-  name: machine-os-content
+  name: fedora-coreos
 spec:
   source:
     type: Git
@@ -17,7 +17,7 @@ spec:
           - 'registry.ci.openshift.org/origin/4.12:artifacts'
       - from:
           kind: ImageStreamTag
-          name: 'release:fedora-coreos'
+          name: 'tools:fedora-coreos'
         as:
           - 'quay.io/coreos-assembler/fcos:next-devel'
   strategy:
@@ -27,4 +27,4 @@ spec:
   output:
     to:
       kind: ImageStreamTag
-      name: 'release:machine-os-content'
+      name: 'release:fedora-coreos'

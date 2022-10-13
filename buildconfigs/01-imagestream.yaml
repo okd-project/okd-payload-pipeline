@@ -6,12 +6,6 @@ spec:
   lookupPolicy:
     local: true
   tags:
-    - name: fedora-coreos
-      from:
-        kind: DockerImage
-        name: quay.io/coreos-assembler/fcos:next-devel
-      referencePolicy:
-        type: Source
     - name: kuryr-cni
       from:
         kind: DockerImage

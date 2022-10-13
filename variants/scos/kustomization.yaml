@@ -1,0 +1,53 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../buildconfigs
+  - ../../pipelines
+
+patches:
+  - patch: |-
+      apiVersion: build.openshift.io/v1
+      kind: BuildConfig
+      metadata:
+        name: not-used
+        labels:
+          change-build-arg-tags: ""
+      spec:
+        strategy:
+          dockerStrategy:
+            buildArgs:
+              - name: "TAGS"
+                value: "scos"
+    target:
+      labelSelector: "change-build-arg-tags==true"
+      kind: BuildConfig
+  - patch: |-
+      - op: add
+        path: "/spec/tags/-"
+        value:
+          name: centos-stream-coreos-9
+          from:
+            kind: DockerImage
+            name: quay.io/okd/centos-stream-coreos-9:4.12-x86_64
+          referencePolicy:
+            type: Local
+          importPolicy:
+            scheduled: true
+    target:
+      kind: ImageStream
+      name: release
+  - patch: |-
+      - op: add
+        path: "/spec/tags/-"
+        value:
+          name: machine-os-content
+          from:
+            kind: ImageStreamTag
+            name: release:centos-stream-coreos-9
+          referencePolicy:
+            type: Local
+    target:
+      kind: ImageStream
+      name: release
+# TODO: handling multi-arch images for the OSes.
