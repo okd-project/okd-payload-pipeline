@@ -18,7 +18,7 @@ spec:
       image: image-registry.openshift-image-registry.svc:5000/openshift/cli:latest
       script: |
         oc adm release new \
-            --registry-config=$(workspaces.credentials.path)/auth.json \
+            --registry-config=$(workspaces.credentials.path)/.dockerconfigjson \
             --from-image-stream release \
             --insecure=true \
             --mirror $(params.release-mirror-location) \
@@ -26,5 +26,5 @@ spec:
             --name=$(params.release-image-name)
   workspaces:
     - name: credentials
-      description: The folder where we write the message to
+      description: The folder where the docker-registry secret is mounted
       mountPath: /credentials
