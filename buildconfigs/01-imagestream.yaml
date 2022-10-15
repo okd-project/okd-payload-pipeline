@@ -18,3 +18,15 @@ spec:
         name: registry.access.redhat.com/ubi9-minimal:9.0.0
       referencePolicy:
         type: Source
+    - name: powervs-block-csi-driver-operator
+      from:
+        kind: DockerImage
+        name: registry.access.redhat.com/ubi9-minimal:9.0.0
+      referencePolicy:
+        type: Source
+    - name: powervs-block-csi-driver
+      from:
+        kind: DockerImage
+        name: registry.access.redhat.com/ubi9-minimal:9.0.0
+      referencePolicy:
+        type: Source
