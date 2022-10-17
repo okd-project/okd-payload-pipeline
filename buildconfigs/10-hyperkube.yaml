@@ -2,7 +2,8 @@ apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
   name: hyperkube
-  namespace: okd
+  labels:
+    resources-profile: high
 spec:
   source:
     type: Git
@@ -11,11 +12,6 @@ spec:
       ref: release-4.12
     contextDir: .
     images:
-      - from:
-          kind: ImageStreamTag
-          name: 'release:builder'
-        as:
-          - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.11'
       - from:
           kind: ImageStreamTag
           name: 'release:forked-dockerfiles'
@@ -59,7 +55,7 @@ spec:
           value: OpenShift Kubernetes Server Commands
         - name: DESCRIPTION
           value: >
-            OpenShift is a platform for developing, 
+            OpenShift is a platform for developing,
             building, and deploying containerized applications.
         - name: TAGS
           value: openshift,hyperkube

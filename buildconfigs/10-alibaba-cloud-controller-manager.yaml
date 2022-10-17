@@ -2,7 +2,8 @@ apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
   name: alibaba-cloud-controller-manager
-  namespace: okd
+  labels:
+    resources-profile: high
 spec:
   source:
     type: Git
@@ -10,12 +11,7 @@ spec:
       uri: 'https://github.com/openshift/cloud-provider-alibaba-cloud'
       ref: release-4.12
     contextDir: .
-    images:
-      - from:
-          kind: ImageStreamTag
-          name: 'release:builder'
-        as:
-          - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.17-openshift-4.10'
+    images: []
   strategy:
     type: Docker
     dockerStrategy:

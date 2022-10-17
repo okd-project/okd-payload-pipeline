@@ -2,14 +2,14 @@ apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
   name: forked-dockerfiles
-  namespace: okd
 spec:
   source:
     type: Git
     git:
-      uri: 'https://github.com/okd-project/okd-centos9-rebuild'
+      uri: 'https://github.com/okd-project/okd-payload-pipeline'
       ref: main
     contextDir: forks
+    images: []
   strategy:
     type: Docker
   output:

@@ -2,23 +2,44 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: batch-build
-  namespace: okd
 spec:
   params:
-    - name: buildconfigs
+    - name: build_configs
       type: array
+    - name: max_concurrent_builds
+      type: string
+      default: "8"
   steps:
     - name: builds
       image: image-registry.openshift-image-registry.svc:5000/openshift/cli:latest
-      args: ["$(params.buildconfigs[*])"]
+      args: ["$(params.build_configs[*])"]
+      env:
+        - name: "MAX_PROCESSES"
+          value: "$(params.max_concurrent_builds)"
+      timeout: 4h0m0s
       script: |
+        #!/bin/bash
+        set -x
+
+        join() {
+          wait -n
+          code="$?"
+          if [ $code -gt 0 ] && [ $code != "127" ]; then
+              # when $code = 127 the shell has no children processes.
+              exit "$code"
+          fi
+          COUNTER=$(( COUNTER - 1 ))
+        }
+
+        COUNTER=0
         for BUILD in "$@"; do
           oc start-build "${BUILD}" -w &
+          COUNTER=$(( COUNTER + 1 ))
+          while [ $COUNTER -ge "$MAX_PROCESSES" ]; do
+            join
+          done
         done
-        while true; do
-          wait -n || {
-            code="$?"
-            ([[ $code = "127" ]] && exit 0 || exit "$code")
-            break
-          }
-        done;
+
+        while [ $COUNTER -gt "0" ]; do
+          join
+        done

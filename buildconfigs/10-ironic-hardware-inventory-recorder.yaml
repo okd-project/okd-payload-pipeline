@@ -2,7 +2,6 @@ apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
   name: ironic-hardware-inventory-recorder
-  namespace: okd
 spec:
   source:
     type: Git

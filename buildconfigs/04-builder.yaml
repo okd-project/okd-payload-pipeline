@@ -2,7 +2,8 @@ apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
   name: builder
-  namespace: okd
+  labels:
+    builder-replacement: skip
 spec:
   source:
     type: Git
@@ -10,6 +11,7 @@ spec:
       uri: 'https://github.com/okd-project/images'
       ref: main
     contextDir: .
+    images: []
   strategy:
     type: Docker
     dockerStrategy:

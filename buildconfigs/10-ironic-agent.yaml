@@ -2,7 +2,6 @@ apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
   name: ironic-agent
-  namespace: okd
 spec:
   source:
     type: Git
@@ -10,6 +9,7 @@ spec:
       uri: 'https://github.com/openshift/ironic-agent-image'
       ref: release-4.12
     contextDir: .
+    images: []
   strategy:
     type: Docker
     dockerStrategy:
