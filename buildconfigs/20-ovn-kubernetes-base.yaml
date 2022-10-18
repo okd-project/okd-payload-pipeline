@@ -1,0 +1,29 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: ovn-kubernetes-base
+spec:
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/openshift/ovn-kubernetes'
+      ref: release-4.12
+    contextDir: .
+    images: []
+  strategy:
+    type: Docker
+    dockerStrategy:
+      imageOptimizationPolicy: SkipLayers
+      dockerfilePath: Dockerfile.base
+      from:
+        kind: "ImageStreamTag"
+        name: "release:base"
+      buildArgs:
+        - name: ovsver
+          value: 2.17.0-31.el9s
+        - name: ovnver
+          value: 22.06.0-16.el9s
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'release:ovn-kubernetes-base'
