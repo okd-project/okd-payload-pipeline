@@ -231,6 +231,7 @@ resources:
   - 10-prometheus-operator.yaml
   - 10-prometheus.yaml
   - 10-prom-label-proxy.yaml
+  - 10-route-controller-manager.yaml
   - 10-sdn.yaml
   - 10-service-ca-operator.yaml
   - 10-telemeter.yaml

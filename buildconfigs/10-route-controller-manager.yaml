@@ -1,0 +1,23 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: route-controller-manager
+spec:
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/openshift/route-controller-manager'
+      ref: release-4.12
+    contextDir: .
+    images: []
+  strategy:
+    type: Docker
+    dockerStrategy:
+      imageOptimizationPolicy: SkipLayers
+      from:
+        kind: "ImageStreamTag"
+        name: "release:base"
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'release:route-controller-manager'
