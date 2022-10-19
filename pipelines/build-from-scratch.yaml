@@ -191,6 +191,7 @@ spec:
           - prometheus-operator-admission-webhook
           - prometheus-operator
           - prometheus
+          - route-controller-manager
           - service-ca-operator
           - telemeter
           - thanos
