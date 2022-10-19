@@ -227,6 +227,7 @@ spec:
           - tools
           - haproxy-router
           - ovn-kubernetes
+          - ovn-kubernetes-base
           - machine-os-images
           - deployer
     - name: batch-03
@@ -240,6 +241,7 @@ spec:
           value:
           - tests
           - network-tools
+          - ovn-kubernetes-microshift
     - name: new-release
       timeout: "2h0m0s"
       runAfter:
