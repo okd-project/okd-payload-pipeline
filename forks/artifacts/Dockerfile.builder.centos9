@@ -9,6 +9,8 @@ ARG PKG_GO_PATH
 ARG ARCHITECTURES
 ARG RPMBUILD_DIR
 ARG MAKE_ARGS
+ARG ADDITIONAL_FILES_FROM_REPO_GLOB
+
 RUN yum install -y --setopt=skip_missing_names_on_install=False rpm-build createrepo bsdtar rsync ${INSTALL_PKGS}
 
 WORKDIR ${PKG_GO_PATH}
@@ -45,6 +47,9 @@ RUN mkdir -p "${RPMBUILD_DIR}"/{BUILD,SOURCES,SPECS,SRPMS,rpms}; \
         "${RPMBUILD_DIR}/SPECS/${SPEC_FILENAME}"; \
     done
 
+RUN  mkdir -p /tmp/additional_bins; if [ -n "${ADDITIONAL_FILES_FROM_REPO_GLOB}" ]; then \
+        cp "${ADDITIONAL_FILES_FROM_REPO_GLOB}" /tmp/additional_bins; fi
+
 FROM registry.ci.openshift.org/ocp/4.11:cli
 
 ARG BIN_OUTPUT
@@ -54,6 +59,7 @@ ARG RPMBUILD_DIR
 ARG NAME
 ARG DESCRIPTION
 ARG TAGS
+ARG VERSIONS
 
 ARG DIR_MAPPING="s/darwin_amd64/darwin/;s/darwin/mac/;s/windows_amd64/windows/"
 
@@ -81,7 +87,9 @@ RUN set -exo pipefail; arch_emachine=$(od -An -t x1 -j 0x12 -N 1 /bin/sh) \
 COPY --from=builder $PKG_GO_PATH/LICENSE /usr/share/openshift/LICENSE
 COPY --from=builder $PKG_GO_PATH/$RPMBUILD_DIR/rpms/ /srv/repo/
 COPY --from=builder $PKG_GO_PATH/$RPMBUILD_DIR/SOURCES/ /srv/zips/
+COPY --from=builder /tmp/additional_bins/ /bin/
 
 LABEL io.k8s.display-name="${NAME}" \
       io.k8s.description="${DESCRIPTION}" \
-      io.openshift.tags="${TAGS}"
+      io.openshift.tags="${TAGS}" \
+      io.openshift.build.versions="${VERSIONS}"

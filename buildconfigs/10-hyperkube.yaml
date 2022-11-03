@@ -60,8 +60,10 @@ spec:
         - name: TAGS
           value: openshift,hyperkube
         - name: VERSIONS
-          value: kubernetes=1.24.0
+          value: "kubernetes=1.25.0"
           # TODO ^^ dynamic handling from the pipeline
+        - name: ADDITIONAL_FILES_FROM_REPO_GLOB
+          value: "openshift-hack/images/hyperkube/*"
   output:
     to:
       kind: ImageStreamTag
