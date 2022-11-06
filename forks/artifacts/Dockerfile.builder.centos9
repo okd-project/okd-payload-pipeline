@@ -47,8 +47,9 @@ RUN mkdir -p "${RPMBUILD_DIR}"/{BUILD,SOURCES,SPECS,SRPMS,rpms}; \
         "${RPMBUILD_DIR}/SPECS/${SPEC_FILENAME}"; \
     done
 
-RUN  mkdir -p /tmp/additional_bins; if [ -n "${ADDITIONAL_FILES_FROM_REPO_GLOB}" ]; then \
-        cp "${ADDITIONAL_FILES_FROM_REPO_GLOB}" /tmp/additional_bins; fi
+# TODO refactor me. this is currently needed to copy the hyperkube and kubensenter scripts in the hyperkube image
+RUN  mkdir -p /tmp/additional_bins; if [ -n "${ADDITIONAL_BIN_FOLDER_FROM_REPO}" ]; then \
+        cp "${ADDITIONAL_BIN_FOLDER_FROM_REPO}/*" /tmp/additional_bins; fi
 
 FROM registry.ci.openshift.org/ocp/4.11:cli
 

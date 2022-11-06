@@ -62,8 +62,9 @@ spec:
         - name: VERSIONS
           value: "kubernetes=1.25.0"
           # TODO ^^ dynamic handling from the pipeline
-        - name: ADDITIONAL_FILES_FROM_REPO_GLOB
-          value: "openshift-hack/images/hyperkube/*"
+          # TODO VV refactor me (see forked dockerfile)
+        - name: ADDITIONAL_BIN_FOLDER_FROM_REPO
+          value: "openshift-hack/images/hyperkube"
   output:
     to:
       kind: ImageStreamTag
