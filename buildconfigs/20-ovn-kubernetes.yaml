@@ -12,11 +12,6 @@ spec:
     images:
       - from:
           kind: ImageStreamTag
-          name: 'release:cli'
-        as:
-          - 'registry.ci.openshift.org/ocp/4.12:cli'
-      - from:
-          kind: ImageStreamTag
           name: 'release:forked-dockerfiles'
         paths:
         - sourcePath: /code/ovn-kubernetes/Dockerfile.centos9

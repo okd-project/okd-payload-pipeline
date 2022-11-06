@@ -9,12 +9,7 @@ spec:
       uri: 'https://github.com/openshift/assisted-installer'
       ref: release-4.12
     contextDir: .
-    images:
-      - from:
-          kind: ImageStreamTag
-          name: 'release:cli'
-        as:
-          - 'registry.ci.openshift.org/ocp/4.11:cli'
+    images: []
   strategy:
     type: Docker
     dockerStrategy:

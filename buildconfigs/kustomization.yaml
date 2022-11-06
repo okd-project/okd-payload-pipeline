@@ -24,6 +24,15 @@ patches:
               - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.16-openshift-4.9'
               - 'registry.ci.openshift.org/ocp/builder:rhel-8-etcd-golang-1.16'
               - 'registry.ci.openshift.org/openshift/release:golang-1.17'
+      - op: add
+        path: "/spec/source/images/-"
+        value:
+          from:
+            kind: ImageStreamTag
+            name: 'release:cli'
+          as:
+            - 'registry.ci.openshift.org/ocp/4.11:cli'
+            - 'registry.ci.openshift.org/ocp/4.12:cli'
     target:
       kind: BuildConfig
       labelSelector: "builder-replacement!=skip"
