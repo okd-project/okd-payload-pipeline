@@ -39,6 +39,17 @@ patches:
       name: tools
   - patch: |-
       - op: add
+        path: "/spec/tags/-"
+        value:
+          name: machine-os-content
+          from:
+            kind: ImageStreamTag
+            name: release:fedora-coreos
+    target:
+      kind: ImageStream
+      name: release
+  - patch: |-
+      - op: add
         path: "/spec/tasks/3/params/0/value/-"
         value:
           fedora-coreos
