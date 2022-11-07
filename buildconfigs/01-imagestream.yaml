@@ -30,3 +30,10 @@ spec:
         name: registry.access.redhat.com/ubi9-minimal:9.0.0
       referencePolicy:
         type: Source
+    - name: ibmcloud-cluster-api-controllers
+      from:
+        kind: DockerImage
+        name: registry.access.redhat.com/ubi9-minimal:9.0.0
+      referencePolicy:
+        type: Source
+
