@@ -1,0 +1,29 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: gpg-verify-release
+  namespace: okd-team
+spec:
+  params:
+    - description: The release digest to verify
+      name: release-digest
+      type: string
+    - description: The URL for the GPG public key to use for verification
+      name: gpg-public-key-url
+      type: string
+      default: "https://raw.githubusercontent.com/openshift/cluster-update-keys/master/keys/verifier-public-key-openshift-ci-2"
+  steps:
+    - image: "image-registry.openshift-image-registry.svc:5000/okd-team/tekton-worker:latest"
+      name: "gpg-verify"
+      script: |
+        #!/usr/bin/env bash
+        set -euxo pipefail
+
+        # Import the public key for verification
+        curl -Lv "$(params.gpg-public-key-url)" | gpg --import
+
+        # Trim off the sha256: prefix so it can be found in the GCS bucket.
+        DIGEST="$(params.release-digest)"
+        DIGEST="${DIGEST/sha256\:/}"
+        curl -Lvs "https://storage.googleapis.com/openshift-ci-release/releases/signatures/openshift/release/sha256=${DIGEST}/signature-1" | gpg -d

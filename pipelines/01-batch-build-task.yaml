@@ -2,6 +2,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: batch-build
+  namespace: okd-team
 spec:
   params:
     - name: build_configs
