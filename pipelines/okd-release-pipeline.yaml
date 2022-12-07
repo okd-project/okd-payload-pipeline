@@ -16,6 +16,18 @@ spec:
     - description: The app.ci imagestream to use for tagging (e.g., release or release-scos)
       name: release-imagestream
       type: string
+    - description: The content mirror destination
+      name: content-mirror-pushspec
+      type: string
+      default: "quay.io/zzlotnik/scos-content"
+    - description: The release mirror destination
+      name: release-mirror-pushspec
+      type: string
+      default: "quay.io/zzlotnik/scos-release"
+    - description: The GitHub org/repo to release to
+      name: github-org-repo
+      type: string
+      default: "cheesesashimi/okd-release-test"
   tasks:
     - name: build-pipeline-worker-image
       taskRef:
@@ -42,6 +54,27 @@ spec:
           value: $(tasks.pick-release.results.release-digest)
       runAfter:
         - pick-release
+    - name: prepare-binaries
+      taskRef:
+        name: prepare-release-binaries
+      params:
+        - name: release-name
+          value: $(tasks.pick-release.results.release-name)
+        - name: release-pullspec
+          value: $(tasks.pick-release.results.release-pullspec)
+        - name: gpg-secret-name
+          value: okd-private-key
+        - name: gpg-secret-name
+          value: okd-private-key
+        - name: gpg-secret-key-name
+          value: private.key
+        - name: gpg-key-id
+          value: maintainers@okd.io
+      runAfter:
+        - verify-release
+      workspaces:
+        - name: release-binaries
+          workspace: release-binaries
     - name: mirror
       taskRef:
         name: mirror-release
@@ -52,18 +85,44 @@ spec:
           value: $(tasks.pick-release.results.release-pullspec)
         - name: image-push-secret-name
           value: okd-okd-robot-pull-secret
-        - name: content-mirror-pushspec
-          value: quay.io/okd/scos-content
         - name: release-mirror-pushspec
-          value: "quay.io/okd/scos-release"
-        - name: gpg-secret-name
-          value: okd-private-key
-        - name: gpg-secret-key-name
-          value: private.key
-        - name: gpg-key-id
-          value: maintainers@okd.io
+          value: $(params.release-mirror-pushspec)
+        - name: content-mirror-pushspec
+          value: $(params.content-mirror-pushspec)
       runAfter:
         - verify-release
+    - name: prepare-release-notes
+      taskRef:
+        name: prepare-release-notes
+      params:
+        - name: release-name
+          value: $(tasks.pick-release.results.release-name)
+        - name: mirrored-release-pullspec
+          value: $(tasks.mirror.results.mirrored-pullspec)
+      runAfter:
+        - mirror
+      workspaces:
+        - name: release-binaries
+          workspace: release-binaries
+    - name: create-github-release
+      taskRef:
+        name: create-github-release
+      params:
+        - name: release-name
+          value: $(tasks.pick-release.results.release-name)
+        - name: github-token-secret-name
+          value: gh-token
+        - name: github-token-secret-key
+          value: gh-okd-token
+        - name: github-org-repo
+          value: $(params.github-org-repo)
+      runAfter:
+        - prepare-binaries
+        - prepare-release-notes
+        - mirror
+      workspaces:
+        - name: release-binaries
+          workspace: release-binaries
     - name: update-release-channel
       taskRef:
         name: update-release-channel
@@ -79,26 +138,6 @@ spec:
         - name: ci-cluster-secret-key
           value: ci-prow-token
       runAfter:
-        - mirror
-    - name: create-github-release
-      taskRef:
-        name: create-github-release
-      params:
-        - name: release-name
-          value: $(tasks.pick-release.results.release-name)
-        - name: mirrored-release-pullspec
-          value: $(tasks.mirror.results.mirrored-pullspec)
-        - name: github-token-secret-name
-          value: gh-token
-        - name: github-token-secret-key
-          value: gh-okd-token
-        - name: gpg-secret-name
-          value: okd-private-key
-        - name: gpg-secret-name
-          value: okd-private-key
-        - name: gpg-secret-key-name
-          value: private.key
-        - name: gpg-key-id
-          value: maintainers@okd.io
-      runAfter:
-        - verify-release
+        - create-github-release
+  workspaces:
+    - name: release-binaries

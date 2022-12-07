@@ -9,9 +9,6 @@ spec:
     - description: The release name to target
       name: release-name
       type: string
-    - description: The mirrored release pullspec to target
-      name: mirrored-release-pullspec
-      type: string
     - description: The Kubernetes secret containing a GitHub token
       name: github-token-secret-name
       type: string
@@ -20,18 +17,6 @@ spec:
       name: github-token-secret-key
       type: string
       default: zzlotnik-gh-okd-token
-    - description: The GPG key ID to sign the release
-      name: gpg-key-id
-      type: string
-      default: okd@not.real.go.away
-    - description: The Kube secret name containing the GPG signing key
-      name: gpg-secret-name
-      type: string
-      default: release-signing-gpg-key
-    - description: The Kube secret key containing the GPG signing key
-      name: gpg-secret-key-name
-      type: string
-      default: fake-okd-signing-key.key
     - description: The GitHub org/repo to release to
       name: github-org-repo
       type: string
@@ -42,8 +27,6 @@ spec:
       env:
         - name: RELEASE_NAME
           value: $(params.release-name)
-        - name: MIRRORED_RELEASE_PULLSPEC
-          value: $(params.mirrored-release-pullspec)
         - name: GH_TOKEN
           valueFrom:
             secretKeyRef:
@@ -53,51 +36,15 @@ spec:
         #!/usr/bin/env bash
         set -euxo pipefail
 
-        # Retrieve the release info, including the pullspecs
-        release_pullspecs="$(oc adm release info --pullspecs "$MIRRORED_RELEASE_PULLSPEC")"
-
-        # Load the release notes template from the ConfigMap
-        release_notes_template="$(cat /var/release-notes-template/release-notes-template.txt)"
-
-        # Substitute the template placeholder for the release info
-        release_notes="${release_notes_template/release_pullspec/$release_pullspecs}"
-
-        client_utils_dir="okd-scos-$RELEASE_NAME"
-
-        # Download and extract the CLI tools from the release
-        oc adm release extract \
-            --command-os='*' \
-            --tools \
-            --to="$client_utils_dir" \
-            "$MIRRORED_RELEASE_PULLSPEC"
-
-        export GPG_TTY=$(tty)
-        # Import our GPG key
-        # Note: I couldn't get this to work by doing gpg --batch --imoprt for some reason.
-        cat "/var/gpg-signing-key/$(params.gpg-secret-key-name)" | gpg --batch --import
-
-        # Sign our release
-        gpg --default-key "$(params.gpg-key-id)" --armor --detach-sign "$client_utils_dir/sha256sum.txt"
-        # Verify that we've signed the release
-        gpg --verify "$client_utils_dir/sha256sum.txt.asc" "$client_utils_dir/sha256sum.txt"
-
-        cd "$client_utils_dir"
+        cd "$(workspaces.release-binaries.path)/$RELEASE_NAME"
 
         # Create a new GitHub release and upload our assets
         # See: https://cli.github.com/ for details on the official GitHub CLI tool
         gh release create "$RELEASE_NAME" \
           --repo "$(params.github-org-repo)" \
-          --notes "$release_notes" \
+          --notes-file release-notes.txt \
           ./*.tar.gz ./*.txt ./*.txt.asc
-      volumeMounts:
-        - name: release-notes-template
-          mountPath: /var/release-notes-template
-        - name: gpg-signing-key
-          mountPath: /var/gpg-signing-key
-  volumes:
-    - name: release-notes-template
-      configMap:
-        name: release-notes-template
-    - name: gpg-signing-key
-      secret:
-        secretName: $(params.gpg-secret-name)
+  workspaces:
+    - name: release-binaries
+      description: The location we store the signed release binaries in
+      mountPath: /var/release-binaries

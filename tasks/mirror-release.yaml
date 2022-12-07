@@ -23,14 +23,11 @@ spec:
     - description: The content mirror destination
       name: content-mirror-pushspec
       type: string
-      default: "quay.io/zzlotnik/scos-content"
     - description: The release mirror destination
       name: release-mirror-pushspec
       type: string
-      default: "quay.io/zzlotnik/scos-release"
   results:
     - name: mirrored-pullspec
-      # type: string
   steps:
     - image: "image-registry.openshift-image-registry.svc:5000/okd-team/tekton-worker:latest"
       name: "mirror-release-to-quay"
