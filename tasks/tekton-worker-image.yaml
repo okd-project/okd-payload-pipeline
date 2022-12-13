@@ -1,0 +1,32 @@
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: tekton-worker
+  namespace: okd-team
+spec:
+  lookupPolicy:
+    local: false
+
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: tekton-worker-image-build
+  namespace: okd-team
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: tekton-worker:latest
+  source:
+    dockerfile: |
+      FROM image-registry.openshift-image-registry.svc:5000/openshift/cli:latest
+      # The GitHub CLI team won't publish official container images for some reason, so we need to build our own
+      RUN curl -Lo gh-cli.rpm "https://github.com/cli/cli/releases/download/v2.20.2/gh_2.20.2_linux_amd64.rpm" && \
+        dnf install -y jq pinentry ./gh-cli.rpm && \
+        rm ./gh-cli.rpm
+    type: Dockerfile
+  strategy:
+    dockerStrategy: {}
+    type: Docker

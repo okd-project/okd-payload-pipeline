@@ -1,0 +1,57 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: prepare-release-notes
+  namespace: okd-team
+spec:
+  params:
+    - description: The release name to target
+      name: release-name
+      type: string
+    - description: The mirrored release pullspec to target
+      name: mirrored-release-pullspec
+      type: string
+  steps:
+    - image: "image-registry.openshift-image-registry.svc:5000/okd-team/tekton-worker:latest"
+      name: "prepare-release-notes"
+      env:
+        - name: RELEASE_NAME
+          value: $(params.release-name)
+        - name: MIRRORED_RELEASE_PULLSPEC
+          value: $(params.mirrored-release-pullspec)
+      script: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+
+        # Retrieve the release info, including the pullspecs
+        release_pullspecs="$(oc adm release info --pullspecs "$MIRRORED_RELEASE_PULLSPEC")"
+        template_file_path="/var/release-notes-template/"
+
+        if [[ "$RELEASE_NAME" == *"scos"* ]]; then
+          echo "Using the OKD on SCOS release notes template"
+          template_file_path="$template_file_path/scos-release-notes-template.txt"
+        else
+          echo "Using the OKD on FCOS release notes template"
+          template_file_path="$template_file_path/fcos-release-notes-template.txt"
+        fi
+
+        # Load the release notes template from the ConfigMap
+        release_notes_template="$(cat "$template_file_path")"
+
+        # Substitute the template placeholder for the release info
+        release_notes="${release_notes_template/release_pullspec/$release_pullspecs}"
+
+        # Write to file in workspace
+        mkdir -p "$(workspaces.release-binaries.path)/$RELEASE_NAME"
+        echo "$release_notes" > "$(workspaces.release-binaries.path)/$RELEASE_NAME/release-notes.txt"
+      volumeMounts:
+        - name: release-notes-template
+          mountPath: /var/release-notes-template
+  volumes:
+    - name: release-notes-template
+      configMap:
+        name: release-notes-template
+  workspaces:
+    - name: release-binaries
+      mountPath: /var/release-binaries

@@ -1,0 +1,36 @@
+---
+apiVersion: v1
+data:
+  scos-release-notes-template.txt: |
+    Client tools for OKD/SCOS
+    -------------------------
+
+    These archives contain the client tooling for [OKD on CentOS Stream CoreOS](https://docs.okd.io).
+
+    To verify the contents of this directory, use the 'gpg' and 'shasum' tools to
+    ensure the archives you have downloaded match those published from this location.
+
+    The openshift-install binary has been preconfigured to install the following release:
+
+    ```
+    release_pullspecs
+    ```
+  fcos-release-notes-template.txt: |
+    Client tools for OKD
+    --------------------
+
+    These archives contain the client tooling for [OKD on Fedora CoreOS](https://docs.okd.io).
+
+    To verify the contents of this directory, use the 'gpg' and 'shasum' tools to
+    ensure the archives you have downloaded match those published from this location.
+
+    The openshift-install binary has been preconfigured to install the following release:
+
+    ```
+    release_pullspecs
+    ```
+
+kind: ConfigMap
+metadata:
+  name: release-notes-template
+  namespace: okd-team

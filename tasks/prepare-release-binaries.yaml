@@ -1,0 +1,78 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: prepare-release-binaries
+  namespace: okd-team
+spec:
+  params:
+    - description: The release name to target
+      name: release-name
+      type: string
+    - description: The release pullspec to target
+      name: release-pullspec
+      type: string
+    - description: The GPG key ID to sign the release
+      name: gpg-key-id
+      type: string
+      default: okd@not.real.go.away
+    - description: The Kube secret name containing the GPG signing key
+      name: gpg-secret-name
+      type: string
+      default: release-signing-gpg-key
+    - description: The Kube secret key containing the GPG signing key
+      name: gpg-secret-key-name
+      type: string
+      default: fake-okd-signing-key.key
+  steps:
+    - image: "image-registry.openshift-image-registry.svc:5000/okd-team/tekton-worker:latest"
+      name: "prepare-release-binaries"
+      env:
+        - name: RELEASE_NAME
+          value: $(params.release-name)
+        - name: RELEASE_PULLSPEC
+          value: $(params.release-pullspec)
+      script: |
+        #!/usr/bin/env bash
+        set -euxo pipefail
+
+        client_utils_dir="./okd-tools/$RELEASE_NAME"
+
+        mkdir -p "$client_utils_dir"
+
+        # Download and extract the CLI tools from the release
+        oc adm release extract \
+            --command-os='*' \
+            --tools \
+            --to="$client_utils_dir" \
+            "$RELEASE_PULLSPEC"
+
+        export GPG_TTY=$(tty)
+        # Import our GPG key
+        # Note: I couldn't get this to work by doing gpg --batch --imoprt for some reason.
+        cat "/var/gpg-signing-key/$(params.gpg-secret-key-name)" | gpg --batch --import
+
+        # Sign our release
+        gpg --default-key "$(params.gpg-key-id)" --armor --detach-sign "$client_utils_dir/sha256sum.txt"
+
+        # Verify that we've signed the release
+        gpg --verify "$client_utils_dir/sha256sum.txt.asc" "$client_utils_dir/sha256sum.txt"
+
+        # Need to copy the files to our PVC once we've signed them since trying
+        # to do them directly to our workspace volume causes gpg to require a
+        # TTY for reasons I don't understand.
+        mkdir -p "$(workspaces.release-binaries.path)/$RELEASE_NAME"
+        cp -r -v "$client_utils_dir/." "$(workspaces.release-binaries.path)/$RELEASE_NAME"
+        ls -la "$(workspaces.release-binaries.path)/$RELEASE_NAME"
+        du -h -c "$(workspaces.release-binaries.path)/$RELEASE_NAME"
+      volumeMounts:
+        - name: gpg-signing-key
+          mountPath: /var/gpg-signing-key
+  workspaces:
+  - name: release-binaries
+    description: The location we store the release binaries before uploading them
+    mountPath: /var/release-binaries
+  volumes:
+    - name: gpg-signing-key
+      secret:
+        secretName: $(params.gpg-secret-name)

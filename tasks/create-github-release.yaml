@@ -1,0 +1,50 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: create-github-release
+  namespace: okd-team
+spec:
+  params:
+    - description: The release name to target
+      name: release-name
+      type: string
+    - description: The Kubernetes secret containing a GitHub token
+      name: github-token-secret-name
+      type: string
+      default: gh-token
+    - description: The secret key name for the GitHub token
+      name: github-token-secret-key
+      type: string
+      default: zzlotnik-gh-okd-token
+    - description: The GitHub org/repo to release to
+      name: github-org-repo
+      type: string
+      default: cheesesashimi/okd-release-test
+  steps:
+    - image: "image-registry.openshift-image-registry.svc:5000/okd-team/tekton-worker:latest"
+      name: "create-github-release"
+      env:
+        - name: RELEASE_NAME
+          value: $(params.release-name)
+        - name: GH_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.github-token-secret-name)
+              key: $(params.github-token-secret-key)
+      script: |
+        #!/usr/bin/env bash
+        set -euxo pipefail
+
+        cd "$(workspaces.release-binaries.path)/$RELEASE_NAME"
+
+        # Create a new GitHub release and upload our assets
+        # See: https://cli.github.com/ for details on the official GitHub CLI tool
+        gh release create "$RELEASE_NAME" \
+          --repo "$(params.github-org-repo)" \
+          --notes-file release-notes.txt \
+          ./*.tar.gz ./*.txt ./*.txt.asc
+  workspaces:
+    - name: release-binaries
+      description: The location we store the signed release binaries in
+      mountPath: /var/release-binaries
