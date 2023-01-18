@@ -1,0 +1,33 @@
+---
+apiVersion: shipwright.io/v1alpha1
+kind: Build
+metadata:
+  name: multiarch-native-buildah-ex
+  namespace: test2
+spec:
+  source:
+    url: https://github.com/shipwright-io/sample-go
+    contextDir: docker-build
+  strategy:
+    name: multi-arch-native-buildah
+    kind: ClusterBuildStrategy
+  paramValues:
+    - name: architectures
+      values:
+        - value: "arm64"
+        - value: "amd64"
+    - name: build-contexts # In place of the `as` array in build configs
+      values:
+        - value: "ghcr.io/shipwright-io/shipwright-samples/golang:1.18=docker://quay.io/aleskandrox/my-shipwright-built-image:golang-1.19"
+        - value: "ghcr.io/shipwright-io/shipwright-samples/other:1.18=docker://golang:1.19-other"
+    # The buildah `--from` replaces the first FROM statement, whereas the OKD's BuildConfigs replace the latest
+    # The runtime-stage-from implements the logic to replace the last stage FROM image of a Dockerfile
+    - name: from
+      value: "" # Using the build-contexts for this example
+    - name: runtime-stage-from
+      value: docker://gcr.io/distroless/static:nonroot
+  dockerfile: Dockerfile
+  output:
+    image: quay.io/aleskandrox/my-shipwright-built-image:latest
+    credentials:
+      name: my-quay-secret
