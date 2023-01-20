@@ -45,6 +45,7 @@ spec:
         curl -Lv "$(params.gpg-public-key-url)" | gpg --import
 
         oc adm release new \
+          --request-timeout=60s \
           --registry-config="/secret/image-push-secret/.dockerconfigjson" \
           --from-release "$RELEASE" \
           --mirror "$(params.content-mirror-pushspec)" \
