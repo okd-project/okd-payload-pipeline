@@ -64,8 +64,6 @@ spec:
           value: $(tasks.pick-release.results.release-pullspec)
         - name: gpg-secret-name
           value: okd-private-key
-        - name: gpg-secret-name
-          value: okd-private-key
         - name: gpg-secret-key-name
           value: private.key
         - name: gpg-key-id
