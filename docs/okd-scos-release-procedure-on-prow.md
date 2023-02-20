@@ -90,6 +90,7 @@
   gpg -a -b okd-scos-${RELEASE}/sha256sum.txt
   ```
 - Upload to GitHub
+- Put `${RELEASE}` as the title for the release
 
 ## Notify community
 - Include links to GitHub release and OKD/SCOS release status page
