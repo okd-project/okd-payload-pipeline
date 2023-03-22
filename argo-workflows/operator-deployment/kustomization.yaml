@@ -1,0 +1,64 @@
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: argo-workflows
+
+resources:
+  - 00-namespace.yaml
+  - https://github.com/argoproj/argo-workflows/releases/download/v3.4.8/install.yaml
+  - 15-rbac.yaml
+  - 20-service-ca-cm.yaml
+  - 25-oauth-deployment.yaml
+  - 25-oauth-service.yaml
+  - 30-route.yaml
+  - 50-oauth-client.yaml
+# For local testing
+patches:
+  - target:
+      name: argo-server
+      kind: Deployment
+    patch: |
+      - op: replace
+        path: "/spec/template/spec/containers/0/readinessProbe/httpGet/scheme"
+        value: HTTP
+      
+      - op: replace
+        path: "/spec/template/spec/containers/0/args"
+        value:
+        - "server"
+        - "--auth-mode=server"
+        - "--access-control-allow-origin=*"
+        - "--secure=false"
+        - "--verbose"
+  - target:
+      name: workflow-controller-configmap
+      kind: ConfigMap
+    path: 10-patch-workflow-controller-configmap.yaml
+  - target:
+      name: argo-workflows-oauth
+      kind: OAuthClient
+    patch: |-
+      - op: add
+        path: "/redirectURIs/-"
+        value: "${ARGO_FINAL_URL}"
+        # TODO ^ find a better way to push the route hostname into the OAuthClient redirectURIs list
+replacements:
+  - source:
+      kind: Deployment
+      name: argo-server
+      fieldPath: metadata.namespace
+    targets:
+      - select:
+          group: rbac.authorization.k8s.io
+          version: v1
+          kind: RoleBinding
+          name: argo-edit-config-map
+        fieldPaths:
+          # All subjects in the RoleBinding
+          - subjects[*].namespace
+
+secretGenerator:
+  - name: argo-workflows-oauth-secret
+    envs:
+      - .env
+
