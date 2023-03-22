@@ -34,6 +34,7 @@ patches:
             type: Local
           importPolicy:
             scheduled: true
+            importMode: PreserveOriginal # Needs OKD 4.13
     target:
       kind: ImageStream
       name: release
@@ -47,6 +48,8 @@ patches:
             name: release:centos-stream-coreos-9
           referencePolicy:
             type: Local
+          importPolicy:
+            importMode: PreserveOriginal # Needs OKD 4.13 (and an actual manifest list scos image to import)
     target:
       kind: ImageStream
       name: release
