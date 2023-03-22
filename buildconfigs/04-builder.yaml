@@ -4,6 +4,7 @@ metadata:
   name: builder
   labels:
     builder-replacement: skip
+    skip-release-branch: "true"
 spec:
   source:
     type: Git

@@ -2,6 +2,8 @@ apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
   name: base
+  labels:
+    skip-release-branch: "true"
 spec:
   source:
     type: Git

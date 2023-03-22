@@ -4,6 +4,20 @@ kind: Kustomization
 namespace: okd
 
 patches:
+  - patch: |-
+      - op: replace
+        path: "/spec/source/git/ref"
+        value: release-4.13
+    target:
+      kind: BuildConfig
+      labelSelector: "skip-release-branch!=true"
+  - patch: |-
+      - op: replace
+        path: "/spec/source/git/ref"
+        value: openshift-4.13
+    target:
+      kind: BuildConfig
+      name: etcd
     # The next patch will replace the build-stage images used by the upstream repositories' Dockerfiles with the okd builder one.
     # In particular, each stage extending from an image contained in the `as` array below will start from the ImageStreamTag release:builder
     # In the future, we may change this to be more specific to the builder image features. E.g., we may need one builder image per golang version.
