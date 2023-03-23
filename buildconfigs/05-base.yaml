@@ -3,31 +3,25 @@ kind: BuildConfig
 metadata:
   name: base
   labels:
+    # TODO: do we need branch cut for this?
     skip-release-branch: "true"
     skip-replace-cli: "true"
 spec:
   source:
     type: Git
     git:
-      uri: 'https://github.com/openshift/images'
-      ref: release-4.12
+      uri: 'https://github.com/okd-project/images'
+      ref: main
     contextDir: base
-    images:
-      - from:
-          kind: ImageStreamTag
-          name: 'release:forked-dockerfiles'
-        paths:
-        - sourcePath: /code/base/Dockerfile.centos9
-          destinationDir: "./base"
+    images: []
   strategy:
     type: Docker
     dockerStrategy:
       imageOptimizationPolicy: SkipLayers
-      dockerfilePath: Dockerfile.centos9
+      dockerfilePath: Dockerfile
       from:
         kind: "ImageStreamTag"
-        name: "release:builder"
-
+        name: "tools:centos9"
   output:
     to:
       kind: ImageStreamTag
