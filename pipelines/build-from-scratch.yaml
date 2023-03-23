@@ -33,6 +33,7 @@ spec:
             - builder
             - forked-dockerfiles
             - base
+            - cli
     - name: batch-01
       timeout: "4h0m0s"
       runAfter:
@@ -165,7 +166,6 @@ spec:
           - oauth-proxy
           - oauth-server
           - oc-mirror
-          - cli
           - cli-artifacts
           - openshift-apiserver
           - openshift-controller-manager

@@ -38,6 +38,10 @@ patches:
               - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.16-openshift-4.9'
               - 'registry.ci.openshift.org/ocp/builder:rhel-8-etcd-golang-1.16'
               - 'registry.ci.openshift.org/openshift/release:golang-1.17'
+    target:
+      kind: BuildConfig
+      labelSelector: "builder-replacement!=skip"
+  - patch: |-
       - op: add
         path: "/spec/source/images/-"
         value:
@@ -49,7 +53,7 @@ patches:
             - 'registry.ci.openshift.org/ocp/4.12:cli'
     target:
       kind: BuildConfig
-      labelSelector: "builder-replacement!=skip"
+      labelSelector: "skip-replace-cli!=true"
   # TODO: tune resources req/lim
   - patch: |-
       - op: add
@@ -96,6 +100,7 @@ resources:
   - 03-forked-dockerfiles.yaml
   - 04-builder.yaml
   - 05-base.yaml
+  - 06-cli.yaml
   - 10-agent-installer-node-agent.yaml
   - 10-agent-installer-orchestrator.yaml
   - 10-alibaba-cloud-controller-manager.yaml
@@ -123,7 +128,6 @@ resources:
   - 10-baremetal-runtimecfg.yaml
   - 10-branding.yaml
   - 10-cli-artifacts.yaml
-  - 10-cli.yaml
   - 10-cloud-credential-operator.yaml
   - 10-cloud-network-config-controller.yaml
   - 10-cluster-authentication-operator.yaml

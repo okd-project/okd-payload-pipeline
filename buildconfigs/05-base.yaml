@@ -4,6 +4,7 @@ metadata:
   name: base
   labels:
     skip-release-branch: "true"
+    skip-replace-cli: "true"
 spec:
   source:
     type: Git
