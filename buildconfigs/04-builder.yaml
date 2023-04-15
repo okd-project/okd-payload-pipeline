@@ -12,13 +12,13 @@ spec:
     git:
       uri: 'https://github.com/okd-project/images'
       ref: main
-    contextDir: .
+    contextDir: builder
     images: []
   strategy:
     type: Docker
     dockerStrategy:
       imageOptimizationPolicy: SkipLayers
-      dockerfilePath: okd-builder.Dockerfile
+      dockerfilePath: Dockerfile
       from:
         kind: "ImageStreamTag"
         name: "tools:centos9"
