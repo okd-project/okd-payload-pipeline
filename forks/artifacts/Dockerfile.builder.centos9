@@ -9,7 +9,7 @@ ARG PKG_GO_PATH
 ARG ARCHITECTURES
 ARG RPMBUILD_DIR
 ARG MAKE_ARGS
-ARG ADDITIONAL_FILES_FROM_REPO_GLOB
+ARG ADDITIONAL_BIN_FOLDER_FROM_REPO
 
 RUN yum install -y --setopt=skip_missing_names_on_install=False rpm-build createrepo bsdtar rsync ${INSTALL_PKGS}
 
@@ -49,7 +49,7 @@ RUN mkdir -p "${RPMBUILD_DIR}"/{BUILD,SOURCES,SPECS,SRPMS,rpms}; \
 
 # TODO refactor me. this is currently needed to copy the hyperkube and kubensenter scripts in the hyperkube image
 RUN  mkdir -p /tmp/additional_bins; if [ -n "${ADDITIONAL_BIN_FOLDER_FROM_REPO}" ]; then \
-        cp "${ADDITIONAL_BIN_FOLDER_FROM_REPO}/*" /tmp/additional_bins; fi
+        cp ${ADDITIONAL_BIN_FOLDER_FROM_REPO}/* /tmp/additional_bins; fi
 
 FROM registry.ci.openshift.org/ocp/4.11:cli
 
