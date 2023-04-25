@@ -6,7 +6,7 @@ namespace: okd-fcos
 resources:
   - ../../buildconfigs
   - ../../pipelines
-
+  - 40-okd-rpms.yaml
 patches:
   - patch: |-
       apiVersion: build.openshift.io/v1
@@ -26,6 +26,13 @@ patches:
       kind: BuildConfig
   - patch: |-
       - op: add
+        path: /spec/tags/-
+        value:
+          from:
+            kind: DockerImage
+            name: registry.fedoraproject.org/fedora:37
+          name: fedora37
+      - op: add
         path: "/spec/tags/-"
         value:
           name: fedora-coreos
@@ -37,6 +44,13 @@ patches:
     target:
       kind: ImageStream
       name: tools
+  - patch: |-
+      - op: replace
+        path: "/spec/source/git/ref"
+        value: release-4.12
+    target:
+      kind: BuildConfig
+      name: fedora-coreos
   - patch: |-
       - op: add
         path: "/spec/tags/-"
@@ -50,10 +64,25 @@ patches:
       name: release
   - patch: |-
       - op: add
-        path: "/spec/tasks/3/params/0/value/-"
+        path: "/spec/tasks/3/params/0/value"
         value:
-          fedora-coreos
+          - tests
+          - network-tools
+          - ovn-kubernetes-microshift
+          - fedora-coreos
+          - okd-rpms
     target:
       kind: Pipeline
       name: build-from-scratch
-
+  - patch: |-
+      - op: replace
+        path: "/spec/tasks/20/params/0/value"
+        value:
+          - artifacts
+          - tests
+          - network-tools
+          - machine-os-content
+          - odk-rpms
+    target:
+      kind: Pipeline
+      name: full-rebuild

@@ -1,0 +1,37 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: okd-rpms
+  labels:
+    builder-replacement: skip
+spec:
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/okd-project/okd-payload-pipeline.git'
+      ref: main
+    contextDir: variants/fcos/okd-rpms
+    images:
+    - as:
+      - release:artifacts
+      from:
+        kind: ImageStreamTag
+        name: release:artifacts
+    - as:
+      - release:machine-config-operator
+      from:
+        kind: ImageStreamTag
+        name: release:machine-config-operator
+  strategy:
+    type: Docker
+    dockerStrategy:
+      from:
+        kind: ImageStreamTag
+        name: tools:fedora37
+      buildArgs:
+        - name: CRIO_VERSION
+          value: "1.25"
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'release:okd-rpms'
