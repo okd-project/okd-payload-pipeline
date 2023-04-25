@@ -7,10 +7,6 @@ ARG CRIO_VERSION=1.25
 WORKDIR /rpms
 
 COPY --from=artifacts /srv/repo/* /tmp/rpms
-COPY manifests /
-
-# TODO: check: is it really needed
-COPY --from=mcd /usr/bin/machine-config-daemon /binaries/machine-config-daemon
 
 RUN \
     mkdir -p /rpms && \
