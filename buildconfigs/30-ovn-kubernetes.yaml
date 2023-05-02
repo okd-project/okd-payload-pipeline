@@ -9,21 +9,15 @@ spec:
       uri: 'https://github.com/openshift/ovn-kubernetes'
       ref: release-4.12
     contextDir: .
-    images:
-      - from:
-          kind: ImageStreamTag
-          name: 'release:forked-dockerfiles'
-        paths:
-        - sourcePath: /code/ovn-kubernetes/Dockerfile.centos9
-          destinationDir: "."
+    images: []
   strategy:
     type: Docker
     dockerStrategy:
       imageOptimizationPolicy: SkipLayers
-      dockerfilePath: Dockerfile.centos9
+      dockerfilePath: Dockerfile.rhel9
       from:
         kind: "ImageStreamTag"
-        name: "release:base"
+        name: "release:ovn-kubernetes-base"
   output:
     to:
       kind: ImageStreamTag
