@@ -212,6 +212,7 @@ spec:
           - installer-artifacts
           - installer
           - hyperkube
+          - ovn-kubernetes-base
     - name: batch-02
       timeout: "2h0m0s"
       runAfter:
@@ -226,7 +227,7 @@ spec:
           - artifacts
           - tools
           - haproxy-router
-          - ovn-kubernetes-base
+          - ovn-kubernetes
           - machine-os-images
           - deployer
     - name: batch-03
@@ -240,7 +241,6 @@ spec:
           value:
           - tests
           - network-tools
-          - ovn-kubernetes
           - ovn-kubernetes-microshift
     - name: new-release
       timeout: "2h0m0s"
