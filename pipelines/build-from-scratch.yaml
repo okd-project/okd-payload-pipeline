@@ -226,7 +226,6 @@ spec:
           - artifacts
           - tools
           - haproxy-router
-          - ovn-kubernetes
           - ovn-kubernetes-base
           - machine-os-images
           - deployer
@@ -241,6 +240,7 @@ spec:
           value:
           - tests
           - network-tools
+          - ovn-kubernetes
           - ovn-kubernetes-microshift
     - name: new-release
       timeout: "2h0m0s"

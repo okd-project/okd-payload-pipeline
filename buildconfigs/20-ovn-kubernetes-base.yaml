@@ -14,7 +14,8 @@ spec:
     type: Docker
     dockerStrategy:
       imageOptimizationPolicy: SkipLayers
-      dockerfilePath: Dockerfile.base.rhel9
+      # Dockerfile.rhel9 is suitable for 4.13 only
+      dockerfilePath: Dockerfile.base
       from:
         kind: "ImageStreamTag"
         name: "release:base"
