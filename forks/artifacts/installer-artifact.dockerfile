@@ -1,7 +1,7 @@
 #
 # it is part of the build sequence of installer-artifacts metapackage for a particular architecture and operating system
 #
-FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.20-openshift-4.12
+FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.19-openshift-4.12
 ARG TAGS=""
 ARG TARGET_OS=linux
 ARG TARGET_ARCH=amd64
