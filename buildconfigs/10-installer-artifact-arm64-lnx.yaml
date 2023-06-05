@@ -15,12 +15,10 @@ spec:
     type: Docker
     dockerStrategy:
       buildArgs:
-        - name: "TAGS"
-          value: "okd"
         - name: "TARGET_ARCH"
           value: "arm64"
         - name: "TARGET_OS"
           value: "linux"
   output:
     to:
-      name: 'installer-artifacts:arm64-lnx'
+      name: 'artifacts:installer-arm64-lnx'

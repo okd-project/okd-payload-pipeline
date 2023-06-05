@@ -61,7 +61,7 @@ patches:
           resources-profile: high
       - op: add
         path: /spec/output/to/kind
-        value: ImageStream
+        value: ImageStreamTag
       - op: add
         path: /spec/source/contextDir
         value: "."
@@ -84,7 +84,7 @@ patches:
         path: /spec/strategy/dockerStrategy/from
         value:
           kind: "ImageStreamTag"
-          name: "release:base"
+          name: "release:builder"
     target:
       kind: BuildConfig
       labelSelector: "part-of-artifacts=installer"

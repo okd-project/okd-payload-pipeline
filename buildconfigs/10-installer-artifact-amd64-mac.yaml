@@ -15,12 +15,10 @@ spec:
     type: Docker
     dockerStrategy:
       buildArgs:
-        - name: "TAGS"
-          value: "okd"
         - name: "TARGET_ARCH"
           value: "amd64"
         - name: "TARGET_OS"
           value: "darwin"
   output:
     to:
-      name: 'installer-artifacts:amd64-mac'
+      name: 'artifacts:installer-amd64-mac'

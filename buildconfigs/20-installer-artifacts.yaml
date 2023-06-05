@@ -3,8 +3,10 @@ kind: BuildConfig
 metadata:
   name: installer-artifacts
   labels:
+    builder-replacement: skip
     change-build-arg-tags: "true"
     meta-for: installer-artifacts
+    resources-profile: low
     skip-release-branch: "true"
 spec:
   source:
@@ -12,17 +14,38 @@ spec:
     git:
 #      uri: 'https://github.com/openshift/installer'
       uri: https://gitbucket.apps.rs1.dsevosty.info/git/openshift-mirror/okd-project-okd-payload-pipeline.git
-      ref: release-4.12-ds01
-    contextDir: .
-    images: []
+      ref: split-merge
+    contextDir: forks
+    images:
+    - as:
+      - artifacts:installer-amd64-lnx
+      from:
+        kind: ImageStreamTag
+        name: artifacts:installer-amd64-lnx
+    - as:
+      - artifacts:installer-amd64-mac
+      from:
+        kind: ImageStreamTag
+        name: artifacts:installer-amd64-mac
+    - as:
+      - artifacts:installer-arm64-lnx
+      from:
+        kind: ImageStreamTag
+        name: artifacts:installer-arm64-lnx
+    - as:
+      - artifacts:installer-arm64-mac
+      from:
+        kind: ImageStreamTag
+        name: artifacts:installer-arm64-mac
   strategy:
     type: Docker
     dockerStrategy:
-      imageOptimizationPolicy: SkipLayers
-      dockerfilePath: code/artifacts/installer-artifacts.dockerfile
+      buildArgs: []
+      dockerfilePath: artifacts/installer-artifacts-metaimage.dockerfile
       from:
         kind: "ImageStreamTag"
         name: "release:base"
+      imageOptimizationPolicy: SkipLayers
   output:
     to:
       kind: ImageStreamTag

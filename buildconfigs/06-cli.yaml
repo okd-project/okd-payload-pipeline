@@ -43,8 +43,7 @@ spec:
         - name: ARCHITECTURES
           value: ""
         - name: MAKE_ARGS
-          value: >-
-            -e --warn-undefined-variables
+          value: -e --warn-undefined-variables
         - name: INSTALL_PKGS
           value: "krb5-devel"
         - name: INSTALL_PKGS_RUNTIME
