@@ -8,4 +8,4 @@ ARG TGT_ARCH=amd64
 
 WORKDIR /go/src/github.com/openshift/installer
 COPY . .
-RUN GOOS=${TGT_OS} GOARCH=${TGT_ARCH} DEFAULT_ARCH="$(go env GOHOSTARCH)" hack/build.sh
+RUN GOOS=linux GOARCH=amd64 DEFAULT_ARCH="$(go env GOHOSTARCH)" hack/build.sh
