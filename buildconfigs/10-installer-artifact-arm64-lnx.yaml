@@ -1,0 +1,26 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: installer-artifacts-arm64-lnx
+  labels:
+    part-of-artifacts: installer
+spec:
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/openshift/installer'
+      ref: release-4.12
+    images: []
+  strategy:
+    type: Docker
+    dockerStrategy:
+      buildArgs:
+        - name: "TAGS"
+          value: "okd"
+        - name: "TARGET_ARCH"
+          value: "arm64"
+        - name: "TARGET_OS"
+          value: "linux"
+  output:
+    to:
+      name: 'installer-artifacts:arm64-lnx'

@@ -1,3 +1,4 @@
+---
 apiVersion: image.openshift.io/v1
 kind: ImageStream
 metadata:
@@ -20,3 +21,8 @@ spec:
         name: 'quay.io/fedora/fedora:36'
       referencePolicy:
         type: Local
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: installer-artifacts

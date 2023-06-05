@@ -3,24 +3,23 @@ kind: BuildConfig
 metadata:
   name: installer-artifacts
   labels:
-    resources-profile: high
     change-build-arg-tags: "true"
+    meta-for: installer-artifacts
+    skip-release-branch: "true"
 spec:
   source:
     type: Git
     git:
-      uri: 'https://github.com/openshift/installer'
-      ref: release-4.12
+#      uri: 'https://github.com/openshift/installer'
+      uri: https://gitbucket.apps.rs1.dsevosty.info/git/openshift-mirror/okd-project-okd-payload-pipeline.git
+      ref: release-4.12-ds01
     contextDir: .
     images: []
   strategy:
     type: Docker
     dockerStrategy:
       imageOptimizationPolicy: SkipLayers
-      dockerfilePath: images/installer-artifacts/Dockerfile.rhel
-      buildArgs:
-          - name: "TAGS"
-            value: "okd"
+      dockerfilePath: code/artifacts/installer-artifacts.dockerfile
       from:
         kind: "ImageStreamTag"
         name: "release:base"
