@@ -17,6 +17,9 @@ spec:
     dockerStrategy:
       imageOptimizationPolicy: SkipLayers
       dockerfilePath: Dockerfile
+      buildArgs:
+        - name: "TAGS"
+          value: "okd"
       from:
         kind: "ImageStreamTag"
         name: "release:base"

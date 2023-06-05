@@ -4,6 +4,20 @@ kind: Kustomization
 namespace: okd
 
 patches:
+  - patch: |-
+      - op: replace
+        path: "/spec/source/git/ref"
+        value: release-4.13
+    target:
+      kind: BuildConfig
+      labelSelector: "skip-release-branch!=true"
+  - patch: |-
+      - op: replace
+        path: "/spec/source/git/ref"
+        value: openshift-4.13
+    target:
+      kind: BuildConfig
+      name: etcd
     # The next patch will replace the build-stage images used by the upstream repositories' Dockerfiles with the okd builder one.
     # In particular, each stage extending from an image contained in the `as` array below will start from the ImageStreamTag release:builder
     # In the future, we may change this to be more specific to the builder image features. E.g., we may need one builder image per golang version.
@@ -15,6 +29,10 @@ patches:
               kind: "ImageStreamTag"
               name: "release:builder"
            as:
+              - 'registry.ci.openshift.org/ocp/builder:rhel-9-golang-1.20-openshift-4.13'
+              - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.20-openshift-4.13'
+              - 'registry.ci.openshift.org/ocp/builder:rhel-9-golang-1.19-openshift-4.13'
+              - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.19-openshift-4.13'
               - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.19-openshift-4.12'
               - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.12'
               - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.11'
@@ -22,8 +40,16 @@ patches:
               - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.17-openshift-4.10'
               - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.16-openshift-4.10'
               - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.16-openshift-4.9'
+              - 'registry.ci.openshift.org/ocp/builder:rhel-8-base-nodejs-openshift-4.13'
               - 'registry.ci.openshift.org/ocp/builder:rhel-8-etcd-golang-1.16'
               - 'registry.ci.openshift.org/openshift/release:golang-1.17'
+              - 'registry.ci.openshift.org/openshift/release:golang-1.18'
+              - 'registry.ci.openshift.org/openshift/release:golang-1.19'
+              - 'registry.ci.openshift.org/openshift/release:golang-1.20'
+    target:
+      kind: BuildConfig
+      labelSelector: "builder-replacement!=skip"
+  - patch: |-
       - op: add
         path: "/spec/source/images/-"
         value:
@@ -33,9 +59,10 @@ patches:
           as:
             - 'registry.ci.openshift.org/ocp/4.11:cli'
             - 'registry.ci.openshift.org/ocp/4.12:cli'
+            - 'registry.ci.openshift.org/ocp/4.13:cli'
     target:
       kind: BuildConfig
-      labelSelector: "builder-replacement!=skip"
+      labelSelector: "skip-replace-cli!=true"
   # TODO: tune resources req/lim
   - patch: |-
       - op: add
@@ -82,6 +109,7 @@ resources:
   - 03-forked-dockerfiles.yaml
   - 04-builder.yaml
   - 05-base.yaml
+  - 06-cli.yaml
   - 10-agent-installer-node-agent.yaml
   - 10-agent-installer-orchestrator.yaml
   - 10-alibaba-cloud-controller-manager.yaml
@@ -109,7 +137,6 @@ resources:
   - 10-baremetal-runtimecfg.yaml
   - 10-branding.yaml
   - 10-cli-artifacts.yaml
-  - 10-cli.yaml
   - 10-cloud-credential-operator.yaml
   - 10-cloud-network-config-controller.yaml
   - 10-cluster-authentication-operator.yaml
@@ -257,12 +284,12 @@ resources:
   - 20-deployer.yaml
   - 20-haproxy-router.yaml
   - 20-machine-os-images.yaml
-  - 20-ovn-kubernetes.yaml
   - 20-ovn-kubernetes-base.yaml
   - 20-tools.yaml
   - 30-fedora-coreos.yaml
   - 30-network-tools.yaml
   - 30-ovn-kubernetes-microshift.yaml
+  - 30-ovn-kubernetes.yaml
   - 30-tests.yaml
   - failing-20-kuryr-cni-base.yaml
   - failing-20-kuryr-cni.yaml

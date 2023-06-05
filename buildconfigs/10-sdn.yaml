@@ -9,21 +9,18 @@ spec:
       uri: 'https://github.com/openshift/sdn'
       ref: release-4.12
     contextDir: .
-    images:
-      - from:
-          kind: ImageStreamTag
-          name: 'release:forked-dockerfiles'
-        paths:
-        - sourcePath: /code/sdn/Dockerfile.centos9
-          destinationDir: "./images/sdn"
+    images: []
   strategy:
     type: Docker
     dockerStrategy:
       imageOptimizationPolicy: SkipLayers
-      dockerfilePath: images/sdn/Dockerfile.centos9
+      dockerfilePath: images/sdn/Dockerfile.rhel
       from:
         kind: "ImageStreamTag"
         name: "release:base"
+      buildArgs:
+        - name: ovsver
+          value: "2.17"
   output:
     to:
       kind: ImageStreamTag
