@@ -1,7 +1,7 @@
 apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
-  name: installer-artifacts-amd64-lnx
+  name: installer-artifact-amd64-lnx
   labels:
     part-of-artifacts: installer
 spec:

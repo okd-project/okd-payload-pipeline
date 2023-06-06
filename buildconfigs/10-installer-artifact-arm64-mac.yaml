@@ -1,7 +1,7 @@
 apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
-  name: installer-artifacts-arm64-mac
+  name: installer-artifact-arm64-mac
   labels:
     part-of-artifacts: installer
 spec:
