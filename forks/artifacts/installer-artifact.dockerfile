@@ -14,7 +14,9 @@ COPY . .
 RUN \
     set -x ; \
     GOOS=${TARGET_OS} GOARCH=${TARGET_ARCH} DEFAULT_ARCH="$(go env GOHOSTARCH)" hack/build.sh
-
+#
+# copy result binary to blank image to avoid locat huge commit overhead and container registry fill
+#
 FROM scratch
 
 COPY --from=builder /go/src/github.com/openshift/installer/bin/openshift-install /

@@ -1,5 +1,5 @@
 #
-# this is an installer-artifacts final metaimage, which contains all openshift-installer binaries (except baremetalm why?)
+# this is an installer-artifacts final metaimage, which contains all openshift-installer binaries (except baremetal, is it needed to add here?)
 #
 
 FROM artifacts:installer-amd64-lnx AS linuxamd64

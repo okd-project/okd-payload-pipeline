@@ -43,7 +43,7 @@ patches:
       name: release
   - patch: |-
       - op: add
-        path: "/spec/tasks/3/params/0/value/-"
+        path: "/spec/tasks/4/params/0/value/-"
         value:
           fedora-coreos
     target:
