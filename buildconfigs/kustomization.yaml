@@ -18,6 +18,15 @@ patches:
     target:
       kind: BuildConfig
       name: etcd
+  - patch: |-
+      - op: add
+        path: /spec/strategy/dockerStrategy/buildArgs
+        value:
+          - name: OCP_VERSION
+            value: "4.13"
+    target:
+      kind: BuildConfig
+      name: base
     # The next patch will replace the build-stage images used by the upstream repositories' Dockerfiles with the okd builder one.
     # In particular, each stage extending from an image contained in the `as` array below will start from the ImageStreamTag release:builder
     # In the future, we may change this to be more specific to the builder image features. E.g., we may need one builder image per golang version.
@@ -56,9 +65,11 @@ patches:
       - op: add
         path: /metadata/labels
         value:
+          builder-replacement: skip
           change-build-arg-tags: "true"
           part-of-artifacts: installer
           resources-profile: high
+          skip-replace-cli: "true"
       - op: add
         path: /spec/output/to/kind
         value: ImageStreamTag
@@ -81,10 +92,14 @@ patches:
         path: /spec/strategy/dockerStrategy/dockerfilePath
         value: images/installer-artifacts/installer-artifact.dockerfile
       - op: add
-        path: /spec/strategy/dockerStrategy/from
-        value:
-          kind: "ImageStreamTag"
-          name: "release:builder"
+        path: /spec/source/dockerfile
+        value: |
+          FROM scratch
+    #  - op: add
+    #    path: /spec/strategy/dockerStrategy/from
+    #    value:
+    #      kind: "ImageStreamTag"
+    #      name: "release:builder"
     target:
       kind: BuildConfig
       labelSelector: "part-of-artifacts=installer"
