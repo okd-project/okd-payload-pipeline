@@ -2,6 +2,9 @@ apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
   name: forked-dockerfiles
+  labels:
+    skip-release-branch: "true"
+    skip-replace-cli: "true"
 spec:
   source:
     type: Git

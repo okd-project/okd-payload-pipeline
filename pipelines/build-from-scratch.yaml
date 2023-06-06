@@ -19,6 +19,10 @@ spec:
     - name: max_concurrent_builds
       type: string
       default: "8"
+    - name: new-release-dry-run
+      description: Dry run of release task
+      type: string
+      default: "false"
   workspaces:
     - name: push-credentials
   tasks:
@@ -33,6 +37,7 @@ spec:
             - builder
             - forked-dockerfiles
             - base
+            - cli
     - name: batch-01
       timeout: "4h0m0s"
       runAfter:
@@ -139,6 +144,10 @@ spec:
           - ibm-vpc-node-label-updater
           - ibmcloud-machine-controllers
           - insights-operator
+          - installer-artifact-amd64-lnx
+          - installer-artifact-amd64-mac
+          - installer-artifact-arm64-lnx
+          - installer-artifact-arm64-mac
           - ironic-agent
           - ironic-machine-os-downloader
           - ironic-static-ip-manager
@@ -158,14 +167,13 @@ spec:
           - multus-route-override-cni
           - multus-whereabouts-ipam-cni
           - must-gather
-          - bond-cni
+          - network-interface-bond-cni
           - network-metrics-daemon
           - nutanix-machine-controllers
           - oauth-apiserver
           - oauth-proxy
           - oauth-server
           - oc-mirror
-          - cli
           - cli-artifacts
           - openshift-apiserver
           - openshift-controller-manager
@@ -209,10 +217,11 @@ spec:
           - sdn
           - console
           - baremetal-installer
-          - installer-artifacts
+#          - installer-artifacts
           - installer
           - hyperkube
-    - name: batch-02
+          - ovn-kubernetes-base
+    - name: meta-image
       timeout: "2h0m0s"
       runAfter:
       - batch-01
@@ -221,15 +230,24 @@ spec:
       params:
         - name: build_configs
           value:
+          - installer-artifacts
+    - name: batch-02
+      timeout: "2h0m0s"
+      runAfter:
+      - meta-image
+      taskRef:
+        name: batch-build
+      params:
+        - name: build_configs
+          value:
           - agent-installer-api-server
           - agent-installer-csr-approver
-          - artifacts
           - tools
           - haproxy-router
-          - ovn-kubernetes
-          - ovn-kubernetes-base
           - machine-os-images
           - deployer
+          - ovn-kubernetes
+          - artifacts
     - name: batch-03
       timeout: "1h0m0s"
       runAfter:

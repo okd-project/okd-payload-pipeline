@@ -2,6 +2,8 @@ apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
   name: artifacts
+  labels:
+    skip-release-branch: "true"
 spec:
   source:
     contextDir: .
@@ -16,6 +18,11 @@ spec:
           name: 'release:hyperkube'
         as:
           - 'release:hyperkube'
+      - from:
+          kind: ImageStreamTag
+          name: 'release:installer-artifacts'
+        as:
+          - 'release:installer-artifacts'
       - from:
           kind: ImageStreamTag
           name: 'release:forked-dockerfiles'

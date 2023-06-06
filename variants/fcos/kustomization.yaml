@@ -9,18 +9,11 @@ resources:
 
 patches:
   - patch: |-
-      apiVersion: build.openshift.io/v1
-      kind: BuildConfig
-      metadata:
-        name: not-used
-        labels:
-          change-build-arg-tags: ""
-      spec:
-        strategy:
-          dockerStrategy:
-            buildArgs:
-              - name: "TAGS"
-                value: "fcos"
+      - op: add
+        path: /spec/strategy/dockerStrategy/buildArgs/-
+        value:
+          name: "TAGS"
+          value: "fcos"
     target:
       labelSelector: "change-build-arg-tags==true"
       kind: BuildConfig
@@ -50,7 +43,7 @@ patches:
       name: release
   - patch: |-
       - op: add
-        path: "/spec/tasks/3/params/0/value/-"
+        path: "/spec/tasks/4/params/0/value/-"
         value:
           fedora-coreos
     target:

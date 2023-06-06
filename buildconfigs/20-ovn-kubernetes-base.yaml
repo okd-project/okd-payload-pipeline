@@ -14,15 +14,15 @@ spec:
     type: Docker
     dockerStrategy:
       imageOptimizationPolicy: SkipLayers
-      dockerfilePath: Dockerfile.base
+      dockerfilePath: Dockerfile.base.rhel9
       from:
         kind: "ImageStreamTag"
         name: "release:base"
       buildArgs:
         - name: ovsver
-          value: 2.17.0-31.el9s
+          value: 3.1.0-17.el9s
         - name: ovnver
-          value: 22.06.0-16.el9s
+          value: 22.03.0-22.el9s
   output:
     to:
       kind: ImageStreamTag

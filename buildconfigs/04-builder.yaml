@@ -4,19 +4,21 @@ metadata:
   name: builder
   labels:
     builder-replacement: skip
+    skip-release-branch: "true"
+    skip-replace-cli: "true"
 spec:
   source:
     type: Git
     git:
       uri: 'https://github.com/okd-project/images'
       ref: main
-    contextDir: .
+    contextDir: builder
     images: []
   strategy:
     type: Docker
     dockerStrategy:
       imageOptimizationPolicy: SkipLayers
-      dockerfilePath: okd-builder.Dockerfile
+      dockerfilePath: Dockerfile
       from:
         kind: "ImageStreamTag"
         name: "tools:centos9"
