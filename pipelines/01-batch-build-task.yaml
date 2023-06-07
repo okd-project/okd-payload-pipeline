@@ -1,3 +1,4 @@
+---
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
@@ -10,6 +11,9 @@ spec:
     - name: max_concurrent_builds
       type: string
       default: "8"
+    - name: build_outdated_only
+      type: string
+      default: ""
   steps:
     - name: builds
       image: image-registry.openshift-image-registry.svc:5000/openshift/cli:latest
@@ -17,24 +21,93 @@ spec:
       env:
         - name: "MAX_PROCESSES"
           value: "$(params.max_concurrent_builds)"
+        - name: "BUILD_OUTDATED_ONLY"
+          value: "$(params.build_outdated_only)"
       timeout: 4h0m0s
       script: |
         #!/bin/bash
-        set -x
 
-        join() {
+        #set -x
+
+        function is_build_outdated() {
+          local bc="$1"
+
+          case $BUILD_OUTDATED_ONLY in
+            [Tt][Rr][Uu][Ee]|[Yy][Ee][Ss])
+              ;;
+            *)
+              return 1
+              ;;
+          esac
+
+          local git_ref git_uri source_commit_id
+          local is_meta image_commit_id is_tag
+
+          eval $(oc get bc $bc -o jsonpath='{"git_ref="}{.spec.source.git.ref}{"\ngit_uri="}{.spec.source.git.uri}{"\nis_meta="}{.metadata.labels.meta-for}{"\nis_tag="}{.spec.output.to.name}{"\n"}')
+
+          [ -z "$is_meta" ] || return 1
+
+          # git ls-remote $git_uri -b $git_ref
+          source_commit_id=$(\
+            curl \
+              -d '0013command=ls-refs000800010008peel000bsymrefs0000' \
+              --http1.1 \
+              -H 'Accept: application/x-git-upload-pack-result' \
+              -H 'Content-Type: application/x-git-upload-pack-request' \
+              -H 'Git-Protocol: version=2' \
+              -H 'Pragma: no-cache' \
+              -H 'User-Agent: git/2.39.2' \
+              -H 'Content-Length: 50' \
+                "$git_uri/git-upload-pack" \
+              2> /dev/null | \
+            awk "/refs\/[^\/]+\/${git_ref}$/ { print \$1; }" | \
+            sed 's/....//')
+
+          oc get istag $is_tag 1> /dev/null 2>&1 || return 1
+
+          istag_commit_id=$(oc describe istag $is_tag | awk -F= '/io.openshift.build.commit.id/ { print $2; }')
+
+          if [ "$source_commit_id" = "$istag_commit_id" -a "${#source_commit_id}" = "40" ] ; then
+            echo "[$(get-cur-dat)] istag $is_tag is up-to-date (commit_id=$istag_commit_id)"
+            return 0
+          fi
+          return 1
+        }
+
+        function get-cur-dat() {
+          echo -n $(date +%Y%m%d%H%M%S)
+        }
+
+        function join() {
           wait -n
           code="$?"
           if [ $code -gt 0 ] && [ $code != "127" ]; then
-              # when $code = 127 the shell has no children processes.
-              exit "$code"
+            exit "$code"
           fi
           COUNTER=$(( COUNTER - 1 ))
         }
 
+        function start_build() {
+          local bc=$1
+          local rc
+          local output
+
+          echo "[$(get-cur-dat)] Build '$bc': start"
+          output=$(oc start-build $bc -w)
+          rc=$?
+          if [ "$rc" = "0" -o "$rc" = "127" ]; then
+            echo "[$(get-cur-dat)] Build '$bc': success($rc)"
+          else
+            echo -e $output
+            echo "[$(get-cur-dat)] Build '$bc': fail($rc)"
+          fi
+          exit $rc
+        }
+
         COUNTER=0
         for BUILD in "$@"; do
-          oc start-build "${BUILD}" -w &
+          is_build_outdated "${BUILD}" && continue
+          start_build "${BUILD}" &
           COUNTER=$(( COUNTER + 1 ))
           while [ $COUNTER -ge "$MAX_PROCESSES" ]; do
             join
