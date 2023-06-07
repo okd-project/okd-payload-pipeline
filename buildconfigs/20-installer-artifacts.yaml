@@ -12,9 +12,8 @@ spec:
   source:
     type: Git
     git:
-#      uri: 'https://github.com/openshift/installer'
-      uri: https://gitbucket.apps.rs1.dsevosty.info/git/openshift-mirror/okd-project-okd-payload-pipeline.git
-      ref: split-merge
+      uri: https://github.com/okd-project/okd-payload-pipeline.git
+      ref: main
     contextDir: forks
     images:
     - as:
