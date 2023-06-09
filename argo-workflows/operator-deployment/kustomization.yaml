@@ -15,6 +15,15 @@ resources:
 # For local testing
 patches:
   - target:
+      name: oauth-proxy
+      kind: Deployment
+    patch: |
+      - op: add
+        path: "/spec/template/spec/containers/0/args/-"
+        value:
+          '--redirect-url=${ARGO_FINAL_URL}/oauth2/callback/'
+      # TODO ^ find a better way to push the route hostname into the oauth-proxy redirect-url
+  - target:
       name: argo-server
       kind: Deployment
     patch: |

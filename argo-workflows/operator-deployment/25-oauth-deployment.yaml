@@ -31,7 +31,6 @@ spec:
             - --cookie-secret-file=/secret/session-secret
             - --cookie-secure=true
             - --upstream=http://argo-server:2746
-            - --redirect-url=https://$CHANGE_ME/oauth2/callback/ # <<< TODO
             - --email-domain=*
           image: image-registry.openshift-image-registry.svc:5000/openshift/oauth-proxy:v4.4
           imagePullPolicy: Always
