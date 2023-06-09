@@ -289,5 +289,5 @@ spec:
           value: $(params.result-image)
         - name: release-image-name
           value: $(params.result-image-name)
-    - name: new-release-dry-run
-      value: $(params.new-release-dry-run)
+        - name: new-release-dry-run
+          value: $(params.new-release-dry-run)
