@@ -1,0 +1,185 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: build-multiarch-image
+spec:
+  ttlStrategy:
+    secondsAfterFailure: 86400
+    secondsAfterSuccess: 8400
+  entrypoint: entrypoint
+  arguments:
+    parameters:
+      - name: build-config-name
+      - name: architectures
+  templates:
+    - name: entrypoint
+      steps:
+        - - name: generate-params
+            template: csv-to-json-array
+            arguments:
+              parameters:
+                - name: list
+                  value: "{{workflow.parameters.architectures}}"
+        - - name: build-single-arch-manifests
+            template: build-single-arch-manifest
+            arguments:
+              parameters:
+                - name: build-config-name
+                  value: "{{workflow.parameters.build-config-name}}"
+                - name: architecture
+                  value: "{{item}}"
+            withParam: "{{steps.generate-params.outputs.result}}"
+        - - name: compose-manifest-list
+            template: compose-manifest-list
+            arguments:
+              parameters:
+                - name: final-image
+                  value: "{{steps.build-single-arch-manifests.outputs.parameters.final-image}}"
+                - name: architectures
+                  value: "{{workflow.parameters.architectures}}"
+    - name: build-single-arch-manifest
+      inputs:
+        parameters:
+          - name: architecture
+            description: The architecture to build the manifest for
+          - name: build-config-name
+      outputs:
+        parameters:
+          - name: final-image
+            valueFrom:
+              parameter: "{{steps.build-generate.outputs.parameters.final-image}}"
+      steps:
+        - - name: build-generate
+            template: build-generate
+            arguments:
+              parameters:
+                - name: architecture
+                  value: "{{inputs.parameters.architecture}}"
+                - name: build-config-name
+                  value: "{{inputs.parameters.build-config-name}}"
+        - - name: build-run-and-wait
+            template: build-run-and-wait
+            arguments:
+              parameters:
+                - name: build
+                  value: "{{steps.build-generate.outputs.parameters.build}}"
+    - name: build-generate
+      inputs:
+        parameters:
+          - name: architecture
+          - name: build-config-name
+      outputs:
+        parameters:
+          - name: build
+            valueFrom:
+              path: /tmp/build.yaml
+          - name: final-image
+            valueFrom:
+              path: /tmp/final-image
+      script:
+        # TODO: Can I use a resource template + action get + jqFilter in the output?
+        # TODO: use an image including both kubectl and yq?
+        image: image-registry.openshift-image-registry.svc:5000/openshift/cli
+        command:
+          - bash
+        source: |
+          #!/bin/bash
+          set -xeo pipefail
+          arch=$(uname -m | sed 's/aarch64/arm64/;s/x86_64/amd64/;')
+          wget -O /tmp/yq "https://github.com/mikefarah/yq/releases/download/v4.32.2/yq_linux_${arch}"
+          chmod +x /tmp/yq
+          /tmp/yq eval-all '
+            select(fileIndex == 0) * select(fileIndex == 1) |
+            del(.spec.failedBuildsHistoryLimit) |
+            del(.status) |
+            del(.spec.runPolicy) |
+            del(.spec.successfulBuildsHistoryLimit) |
+            del(.metadata.creationTimestamp) |
+            del(.metadata.uid) |
+            del(.metadata.resourceVersion) |
+            del(.metadata.annotations) |
+            .metadata.generateName = .metadata.name + "-{{inputs.parameters.architecture}}-" |
+            .spec.output.to.name = .spec.output.to.name + "-{{inputs.parameters.architecture}}" |
+            del(.metadata.name)
+          ' \
+            <(kubectl get "bc/{{inputs.parameters.build-config-name}}" -o yaml) - <<EOF | tee /tmp/build.yaml
+            kind: Build
+            spec:
+              nodeSelector: 
+                kubernetes.io/arch: {{inputs.parameters.architecture}}
+          EOF
+          
+          image=$(/tmp/yq -r '.spec.output.to.name' /tmp/build.yaml)
+          namespace=$(/tmp/yq -r '.spec.output.to.namespace' /tmp/build.yaml)
+          if [ "$namespace" == "null" ]; then
+            # Use the namespace associated with the service account running this container
+            namespace=$(</var/run/secrets/kubernetes.io/serviceaccount/namespace)
+          fi
+          echo "image-registry.openshift-image-registry.svc:5000/$namespace/${image%-*}" > /tmp/final-image
+    - name: build-run-and-wait
+      inputs:
+        parameters:
+          - name: build
+      resource:
+        action: create
+        setOwnerReference: true
+        successCondition: status.phase in (Complete)
+        failureCondition: status.phase in (Failed)
+        manifest: |
+          {{inputs.parameters.build}}
+    - name: compose-manifest-list
+      inputs:
+        parameters:
+          - name: final-image
+          - name: architectures
+      script:
+        image: image-registry.openshift-image-registry.svc:5000/openshift/cli
+        command:
+          - bash
+        source: |
+          #!/bin/bash
+          set -euo pipefail
+          # TODO another image? The current official manifest-tool image extends from scratch 
+          # and we cannot use files redirection in the args list if using it
+          wget -O /tmp/binaries-manifest-tool.tar.gz https://github.com/estesp/manifest-tool/releases/download/v2.0.8/binaries-manifest-tool-2.0.8.tar.gz
+          tar -C /tmp --transform 's/manifest-tool-linux-.*/mtl/' \
+            -xvf /tmp/binaries-manifest-tool.tar.gz manifest-tool-linux-$(uname -m | sed 's/aarch64/arm64/;s/x86_64/amd64/')
+          image='{{inputs.parameters.final-image}}'
+          image="${image%\",*}"
+          image="${image#\[\"}"
+          mapfile -t architectures < <(echo "{{inputs.parameters.architectures}}" | tr ',' '\n')
+          echo "[INFO] Creating manifest list ${image} with manifests for architectures ${architectures[*]}"         
+          MANIFEST_LIST="
+          image: ${image}
+          manifests:"
+          for arch in "${architectures[@]}"; do
+            MANIFEST_LIST="${MANIFEST_LIST}
+            - image: ${image}-${arch}
+              platform:
+                architecture: ${arch}
+                os: linux"
+          done
+          echo "${MANIFEST_LIST}"          
+          /tmp/mtl --insecure --username k8s --password "$(</var/run/secrets/kubernetes.io/serviceaccount/token)" \
+            push from-spec <(echo "${MANIFEST_LIST}")
+          
+          echo "[INFO] Manifest list pushed to ${image}. Deleting individual manifests..."
+          set -x
+          image="${image#image-registry.openshift-image-registry.svc:5000/}"
+          namespace="${image%%/*}"
+          image="${image#*/}"
+          for arch in "${architectures[@]}"; do
+            oc delete -n ${namespace} istag "${image}-${arch}"
+          done
+          echo "[INFO] Done."
+    - name: csv-to-json-array
+      inputs:
+        parameters:
+          - name: list
+      script:
+        image: image-registry.openshift-image-registry.svc:5000/openshift/python:3.9-ubi9
+        command: [python]
+        source: |
+          import json
+          l = "{{inputs.parameters.list}}"
+          print(json.dumps(l.split(",")))

@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oauth-proxy
+  namespace: argo-workflows
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: oauth-proxy
+  template:
+    metadata:
+      labels:
+        app: oauth-proxy
+    spec:
+      containers:
+        - args:
+            - --provider=openshift
+            - --https-address=:8083
+            - --http-address=
+            - --tls-cert=/tls/tls.crt
+            - --tls-key=/tls/tls.key
+            - --ssl-insecure-skip-verify=true
+            - --client-id=argo-workflows-oauth
+            - --client-secret=argo-oauth-proxy-secret
+            - --openshift-ca=/etc/pki/tls/cert.pem
+            - --openshift-ca=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            - --openshift-ca=/service-ca/service-ca.crt
+            - --scope=user:full user:info user:check-access user:list-projects
+            - --cookie-secret-file=/secret/session-secret
+            - --cookie-secure=true
+            - --upstream=http://argo-server:2746
+            - --email-domain=*
+          image: image-registry.openshift-image-registry.svc:5000/openshift/oauth-proxy:v4.4
+          imagePullPolicy: Always
+          name: oauth-proxy
+          ports:
+            - containerPort: 8083
+              name: https
+              protocol: TCP
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 10m
+              memory: 20Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /service-ca
+              name: service-ca
+              readOnly: true
+            - mountPath: /secret
+              name: argo-workflows-oauth-secret
+              readOnly: true
+            - mountPath: /tls
+              name: oauth-proxy-tls-secret
+              readOnly: true
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - configMap:
+            defaultMode: 420
+            name: service-ca
+          name: service-ca
+        - name: oauth-proxy-tls-secret
+          secret:
+            defaultMode: 420
+            secretName: oauth-proxy-tls-secret
+        - name: argo-workflows-oauth-secret
+          secret:
+            defaultMode: 420
+            secretName: argo-workflows-oauth-secret

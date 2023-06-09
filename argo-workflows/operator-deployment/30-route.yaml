@@ -1,0 +1,17 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: argo-server
+  namespace: argo-workflows
+spec:
+  host: ""
+  to:
+    kind: Service
+    name: oauth-proxy
+    weight: 100
+  port:
+    targetPort: ssl
+  tls:
+    termination: passthrough
+    insecureEdgeTerminationPolicy: None
+  wildcardPolicy: None

@@ -1,0 +1,104 @@
+kind: List
+apiVersion: v1
+items:
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    metadata:
+      name: build-manager
+      namespace: argo-workflows-build-example
+      annotations:
+        description: |
+          This role will allow the bound service account to manage builds and get buildconfigs.
+          It is needed by the service account adapting the BuildConfigs into Builds to create and control.
+    rules:
+      - apiGroups:
+          - ""
+          - build.openshift.io
+        resources:
+          - builds
+        verbs:
+          - get
+          - create
+          - update
+          - delete
+      - apiGroups:
+          - ""
+          - build.openshift.io
+        resources:
+          - buildconfigs
+        verbs:
+          - get
+      - apiGroups:
+          - "image.openshift.io"
+        resources:
+          - imagestreamtags
+          - imagestreams
+        verbs:
+          # to delete the single-arch manifest imagestreamtags
+          # and handle the cleanup of the release imagestream
+          - delete
+          - create
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    metadata:
+      name: argo-workflows-controller
+      namespace: argo-workflows-build-example
+      annotations:
+        description: |
+          This role is needed to allow the output parameters handling and to set the finalizers of the workflows objects
+          when the setOwnerReference field is used by their steps.
+    rules:
+      - apiGroups:
+          - argoproj.io
+        resources:
+          - workflowtaskresults
+          - workflows/finalizers
+        verbs:
+          - create
+          - get
+          - patch
+          - delete
+          - update
+      - apiGroups:
+          - argoproj.io
+        resources:
+          - workflows
+        verbs:
+          - create
+          - get
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    metadata:
+      name: workflows-build-manager
+      namespace: argo-workflows-build-example
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: build-manager
+    subjects:
+      - kind: ServiceAccount
+        name: workflows
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    metadata:
+      name: workflows-argo-workflows-exec
+      namespace: argo-workflows-build-example
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: argo-workflows-controller
+    subjects:
+      - kind: ServiceAccount
+        name: workflows
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    metadata:
+      name: argo-image-builder
+      namespace: argo-workflows-build-example
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: system:image-builder
+    subjects:
+      - kind: ServiceAccount
+        name: workflows
