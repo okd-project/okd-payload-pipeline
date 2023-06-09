@@ -12,7 +12,7 @@ spec:
   source:
     type: Git
     git:
-      uri: https://github.com/okd-project/okd-payload-pipeline.git
+      uri: https://github.com/okd-project/okd-payload-pipeline
       ref: main
     contextDir: forks
     images:
