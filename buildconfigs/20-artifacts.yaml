@@ -1,0 +1,68 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: artifacts
+  labels:
+    builder-replacement: skip
+    change-build-arg-tags: "true"
+    resources-profile: low
+    skip-release-branch: "true"
+    skip-replace-cli: "true"
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'release:artifacts'
+  source:
+    contextDir: .
+    images:
+      - from:
+          kind: ImageStreamTag
+          name: 'release:cli-artifacts'
+        as:
+          - 'release:cli-artifacts'
+      - from:
+          kind: ImageStreamTag
+          name: 'release:hyperkube'
+        as:
+          - 'release:hyperkube'
+      - as:
+        - artifacts:installer-amd64-lnx
+        from:
+          kind: ImageStreamTag
+          name: artifacts:installer-amd64-lnx
+      - as:
+        - artifacts:installer-amd64-mac
+        from:
+          kind: ImageStreamTag
+          name: artifacts:installer-amd64-mac
+      - as:
+        - artifacts:installer-arm64-lnx
+        from:
+          kind: ImageStreamTag
+          name: artifacts:installer-arm64-lnx
+      - as:
+        - artifacts:installer-arm64-mac
+        from:
+          kind: ImageStreamTag
+          name: artifacts:installer-arm64-mac
+      #- from:
+      #      kind: ImageStreamTag
+      #      name: 'release:installer-artifacts'
+      #    as:
+      #      - 'release:installer-artifacts'
+      - from:
+          kind: ImageStreamTag
+          name: 'release:forked-dockerfiles'
+        paths:
+          - sourcePath: /code/artifacts/Dockerfile.centos9
+            destinationDir: "."
+  strategy:
+    type: Docker
+    dockerStrategy:
+      buildArgs: []
+      dockerfilePath: Dockerfile.centos9
+      from:
+        kind: "ImageStreamTag"
+        name: "release:base"
+      imageOptimizationPolicy: SkipLayers

@@ -342,14 +342,13 @@ resources:
   - 10-vsphere-problem-detector.yaml
   - 20-agent-installer-api-server.yaml
   - 20-agent-installer-csr-approver.yaml
-#  - 20-artifacts.yaml
+  - 20-artifacts.yaml
   - 20-deployer.yaml
   - 20-haproxy-router.yaml
   - 20-machine-os-images.yaml
   - 20-installer-artifacts.yaml
   - 20-ovn-kubernetes-base.yaml
   - 20-tools.yaml
-  - 30-artifacts.yaml
   - 30-fedora-coreos.yaml
   - 30-network-tools.yaml
   - 30-ovn-kubernetes-microshift.yaml

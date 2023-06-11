@@ -6,6 +6,10 @@ spec:
   lookupPolicy:
     local: true
   tags:
+    - name: okd-rpms
+      from:
+        kind: ImageStreamTag
+        name: release:artifacts
     - name: kuryr-cni
       from:
         kind: DockerImage

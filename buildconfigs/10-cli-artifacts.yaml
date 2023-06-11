@@ -51,6 +51,7 @@ spec:
           value: >
             OpenShift is a platform for developing,
             building, and deploying containerized applications.
+        # are these tag really necessary here?
         - name: TAGS
           value: openshift,cli
         - name: VERSIONS

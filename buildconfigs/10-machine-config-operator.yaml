@@ -18,6 +18,7 @@ spec:
       imageOptimizationPolicy: SkipLayers
       dockerfilePath: Dockerfile
       buildArgs:
+        # are these tag really necessary here? seems "no"
         - name: "TAGS"
           value: "okd"
       from:

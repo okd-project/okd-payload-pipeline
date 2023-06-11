@@ -3,6 +3,7 @@ kind: BuildConfig
 metadata:
   name: forked-dockerfiles
   labels:
+    builder-replacement: skip
     skip-release-branch: "true"
     skip-replace-cli: "true"
 spec:
