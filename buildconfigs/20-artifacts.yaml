@@ -5,6 +5,7 @@ metadata:
   labels:
     builder-replacement: skip
     change-build-arg-tags: "true"
+    meta-for: installer
     resources-profile: low
     skip-release-branch: "true"
     skip-replace-cli: "true"
