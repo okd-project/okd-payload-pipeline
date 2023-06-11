@@ -8,19 +8,21 @@ spec:
     local: true
   tags:
     - name: centos9
-      annotations: null
       from:
         kind: DockerImage
         name: 'quay.io/centos/centos:stream9'
       referencePolicy:
         type: Local
+      importPolicy:
+        importMode: PreserveOriginal # Needs OKD 4.13
     - name: fedora36
-      annotations: null
       from:
         kind: DockerImage
         name: 'quay.io/fedora/fedora:36'
       referencePolicy:
         type: Local
+      importPolicy:
+        importMode: PreserveOriginal # Needs OKD 4.13
 ---
 apiVersion: image.openshift.io/v1
 kind: ImageStream

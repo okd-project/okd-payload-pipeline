@@ -1,0 +1,5 @@
+resources:
+  - 15-rbac.yaml
+  - 30-build-workflow-template.yaml
+  - 40-build-from-scratch.yaml
+

@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: oauth-proxy
+  namespace: argo-workflows
+  annotations:
+    service.beta.openshift.io/serving-cert-secret-name: oauth-proxy-tls-secret
+spec:
+  type: ClusterIP
+  ports:
+  - name: ssl
+    port: 443
+    targetPort: 8083
+  selector:
+    app: oauth-proxy
