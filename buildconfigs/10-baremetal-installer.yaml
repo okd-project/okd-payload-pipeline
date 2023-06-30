@@ -25,6 +25,7 @@ spec:
       imageOptimizationPolicy: SkipLayers
       dockerfilePath: images/baremetal/Dockerfile.centos9
       buildArgs:
+        # are these tag really necessary here?
           - name: "TAGS"
             value: "baremetal libvirt okd"
       from:

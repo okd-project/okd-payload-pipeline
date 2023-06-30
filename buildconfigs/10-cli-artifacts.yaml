@@ -38,8 +38,7 @@ spec:
         - name: ARCHITECTURES
           value: "x86_64 aarch64 s390x ppc64le"
         - name: MAKE_ARGS
-          value: >-
-            cross-build --warn-undefined-variables
+          value: "cross-build --warn-undefined-variables"
         - name: INSTALL_PKGS
           value: "krb5-devel"
         - name: INSTALL_PKGS_RUNTIME
@@ -52,6 +51,7 @@ spec:
           value: >
             OpenShift is a platform for developing,
             building, and deploying containerized applications.
+        # are these tag really necessary here?
         - name: TAGS
           value: openshift,cli
         - name: VERSIONS

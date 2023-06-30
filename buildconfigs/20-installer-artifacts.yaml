@@ -1,0 +1,51 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: installer-artifacts
+  labels:
+    builder-replacement: skip
+    change-build-arg-tags: "true"
+    meta-for: installer-artifacts
+    resources-profile: low
+    skip-release-branch: "true"
+spec:
+  source:
+    type: Git
+    git:
+      uri: https://github.com/okd-project/okd-payload-pipeline
+      ref: main
+    contextDir: forks
+    images:
+    - as:
+      - artifacts:installer-amd64-lnx
+      from:
+        kind: ImageStreamTag
+        name: artifacts:installer-amd64-lnx
+    - as:
+      - artifacts:installer-amd64-mac
+      from:
+        kind: ImageStreamTag
+        name: artifacts:installer-amd64-mac
+    - as:
+      - artifacts:installer-arm64-lnx
+      from:
+        kind: ImageStreamTag
+        name: artifacts:installer-arm64-lnx
+    - as:
+      - artifacts:installer-arm64-mac
+      from:
+        kind: ImageStreamTag
+        name: artifacts:installer-arm64-mac
+  strategy:
+    type: Docker
+    dockerStrategy:
+      buildArgs: []
+      dockerfilePath: artifacts/installer-artifacts-metaimage.dockerfile
+      from:
+        kind: "ImageStreamTag"
+        name: "release:base"
+      imageOptimizationPolicy: SkipLayers
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'release:installer-artifacts'

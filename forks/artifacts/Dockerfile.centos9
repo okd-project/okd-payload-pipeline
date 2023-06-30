@@ -1,7 +1,42 @@
+FROM fedora:37 AS crio
+
+ARG CRIO_VERSION=1.25
+ARG TAGS=""
+
+RUN \
+    set -x ; \
+    mkdir -p /rpms && \
+    [ "$TAGS" = "fcos" ] || exit 0 ; \
+    dnf install -y dnf-plugins-core && \
+    dnf module enable -y cri-o:${CRIO_VERSION} && \
+    dnf download -y cri-o cri-tools --destdir /rpms/$(uname -m) && \
+    dnf clean all
+
 FROM release:base
+
+## is it necessary here? will release:installer-artifacts istag (offically at payload) be merged with the release:artifacts istag (currently not in payload)
+#COPY --from=artifacts:installer-amd64-lnx /openshift-install /usr/share/openshift/linux_amd64/openshift-install
+#COPY --from=artifacts:installer-arm64-lnx /openshift-install /usr/share/openshift/linux_arm64/openshift-install
+#COPY --from=artifacts:installer-amd64-mac /openshift-install /usr/share/openshift/mac_arm64/openshift-install
 
 COPY --from=release:cli-artifacts /srv/ /srv/
 COPY --from=release:hyperkube /srv/ /srv/
+COPY --from=crio /rpms /tmp/rpms
 
 # TODO: the /srv/repo/ structure is slightly different than the origin-artifacts' structure and
 # this should lead to issues for the current consumers of this image: they should look for /srv/$(arch)/my_package.rpm
+
+RUN \
+    set -x ; \
+    if [ -d /tmp/rpms/$(uname -m) ] ; then \
+	mkdir -p /rpms && \
+	for r in /tmp/rpms/$(uname -m)/* ; do \
+	    mv -v $r /rpms/$(basename $r) ; \
+	done ; \
+    fi ; \
+    if [ -d /srv/repo/$(uname -m) ] ; then \
+	mkdir -p /rpms && \
+	for r in /srv/repo/$(uname -m)/* ; do \
+	    ln -v $r /rpms/$(basename $r) ; \
+	done ; \
+    fi ;

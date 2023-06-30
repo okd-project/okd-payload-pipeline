@@ -9,21 +9,26 @@ resources:
 
 patches:
   - patch: |-
-      apiVersion: build.openshift.io/v1
-      kind: BuildConfig
-      metadata:
-        name: not-used
-        labels:
-          change-build-arg-tags: ""
-      spec:
-        strategy:
-          dockerStrategy:
-            buildArgs:
-              - name: "TAGS"
-                value: "fcos"
+      - op: add
+        path: /spec/strategy/dockerStrategy/buildArgs/-
+        value:
+          name: "TAGS"
+          value: "fcos"
     target:
       labelSelector: "change-build-arg-tags==true"
       kind: BuildConfig
+  - patch: |-
+      - op: add
+        path: /spec/source/images/-
+        value:
+          from:
+            kind: ImageStreamTag
+            name: 'tools:fedora37'
+          as:
+            - 'fedora:37'
+    target:
+      kind: BuildConfig
+      name: artifacts
   - patch: |-
       - op: add
         path: "/spec/tags/-"
@@ -34,6 +39,20 @@ patches:
             name: quay.io/fedora/fedora-coreos:next-devel
           referencePolicy:
             type: Source
+        #
+        # fc37 is necessary to build ironic and okd-rpms
+      - op: add
+        path: /spec/tags/-
+        value:
+          from:
+            kind: DockerImage
+            name: registry.fedoraproject.org/fedora:37
+          #importPolicy:
+          #    scheduled: true
+          #    importMode: PreserveOriginal # Needs OKD 4.13
+          name: fedora37
+          referencePolicy:
+            type: Local
     target:
       kind: ImageStream
       name: tools
@@ -50,7 +69,7 @@ patches:
       name: release
   - patch: |-
       - op: add
-        path: "/spec/tasks/3/params/0/value/-"
+        path: "/spec/tasks/3/params/1/value/-"
         value:
           fedora-coreos
     target:

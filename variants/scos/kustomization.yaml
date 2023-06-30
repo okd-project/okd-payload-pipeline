@@ -7,6 +7,13 @@ resources:
 
 patches:
   - patch: |-
+      - op: add
+        path: /spec/strategy/dockerStrategy/dockerfilePath
+        value: Dockerfile.scos
+    target:
+      kind: BuildConfig
+      name: ironic
+  - patch: |-
       apiVersion: build.openshift.io/v1
       kind: BuildConfig
       metadata:

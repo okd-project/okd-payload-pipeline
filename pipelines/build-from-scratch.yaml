@@ -19,6 +19,14 @@ spec:
     - name: max_concurrent_builds
       type: string
       default: "8"
+    - name: build_outdated_only
+      default: ""
+      description: Build or not up-to-date images
+      type: string
+    - name: new-release-dry-run
+      description: Dry run of release task
+      type: string
+      default: "false"
   workspaces:
     - name: push-credentials
   tasks:
@@ -26,6 +34,8 @@ spec:
       taskRef:
         name: batch-build
       params:
+        - name: build_outdated_only
+          value: "false"
         - name: max_concurrent_builds
           value: "1"
         - name: build_configs
@@ -41,10 +51,14 @@ spec:
       taskRef:
         name: batch-build
       params:
+        - name: build_outdated_only
+          value: "$(params.build_outdated_only)"
         - name: max_concurrent_builds
           value: "$(params.max_concurrent_builds)"
         - name: build_configs
           value:
+          - agent-installer-api-server
+          - agent-installer-csr-approver
           - agent-installer-node-agent
           - agent-installer-orchestrator
           - alibaba-cloud-controller-manager
@@ -66,10 +80,12 @@ spec:
           - azure-file-csi-driver-operator
           - azure-file-csi-driver
           - azure-machine-controllers
+          - baremetal-installer
           - baremetal-machine-controllers
           - baremetal-operator
           - baremetal-runtimecfg
           - branding
+          - cli-artifacts
           - cloud-credential-operator
           - cloud-network-config-controller
           - cluster-authentication-operator
@@ -95,6 +111,7 @@ spec:
           - cluster-machine-approver
           - cluster-monitoring-operator
           - cluster-network-operator
+          - cluster-node-tuning-operator
           - cluster-openshift-apiserver-operator
           - cluster-openshift-controller-manager-operator
           - cluster-policy-controller
@@ -103,10 +120,11 @@ spec:
           - cluster-update-keys
           - cluster-version-operator
           - configmap-reloader
+          - console
           - console-operator
           - container-networking-plugins
-          - contour-operator
           - contour
+          - contour-operator
           - coredns
           - csi-driver-manila-operator
           - csi-driver-manila
@@ -133,6 +151,7 @@ spec:
           - gcp-pd-csi-driver-operator
           - gcp-pd-csi-driver
           - haproxy-router-base
+          - hyperkube
           - hypershift
           - ibm-cloud-controller-manager
           - ibm-vpc-block-csi-driver-operator
@@ -140,33 +159,40 @@ spec:
           - ibm-vpc-node-label-updater
           - ibmcloud-machine-controllers
           - insights-operator
+          - installer
+          - ironic
           - ironic-agent
+          - ironic-hardware-inventory-recorder
+          - installer-artifact-amd64-lnx
           - ironic-machine-os-downloader
           - ironic-static-ip-manager
           - k8s-prometheus-adapter
           - keepalived-ipfailover
+          - installer-artifact-amd64-mac
           - kube-proxy
           - kube-rbac-proxy
           - kube-state-metrics
           - kube-storage-version-migrator
           - local-storage-static-provisioner
+          - installer-artifact-arm64-lnx
+          - libvirt-machine-controllers
           - machine-api-operator
           - machine-config-operator
           - machine-image-customization-controller
           - multus-admission-controller
           - multus-cni
+          - installer-artifact-arm64-mac
           - multus-networkpolicy
           - multus-route-override-cni
           - multus-whereabouts-ipam-cni
           - must-gather
-          - bond-cni
+          - network-interface-bond-cni
           - network-metrics-daemon
           - nutanix-machine-controllers
           - oauth-apiserver
           - oauth-proxy
           - oauth-server
           - oc-mirror
-          - cli-artifacts
           - openshift-apiserver
           - openshift-controller-manager
           - openshift-state-metrics
@@ -177,10 +203,12 @@ spec:
           - openstack-machine-controllers
           - operator-lifecycle-manager
           - operator-marketplace
+          - operator-registry
           - ovirt-csi-driver-operator
           - ovirt-csi-driver
           - ovirt-installer
           - ovirt-machine-controllers
+          - ovn-kubernetes-base
           - pod
           - powervs-cloud-controller-manager
           - powervs-machine-controllers
@@ -193,6 +221,7 @@ spec:
           - prometheus
           - route-controller-manager
           - service-ca-operator
+          - sdn
           - telemeter
           - thanos
           - vsphere-cloud-controller-manager
@@ -201,35 +230,37 @@ spec:
           - vsphere-csi-driver-syncer
           - vsphere-csi-driver
           - vsphere-problem-detector
-          - cluster-node-tuning-operator
-          - ironic
-          - ironic-hardware-inventory-recorder
-          - libvirt-machine-controllers
-          - operator-registry
-          - sdn
-          - console
-          - baremetal-installer
-          - installer-artifacts
-          - installer
-          - hyperkube
+#          - installer-artifacts
+#    - name: meta-images
+#      timeout: "2h0m0s"
+#      runAfter:
+#      - batch-01
+#      taskRef:
+#        name: batch-build
+#      params:
+#        - name: build_configs
+#          value:
+#          - installer-artifacts
     - name: batch-02
       timeout: "2h0m0s"
       runAfter:
       - batch-01
+#      - meta-images
       taskRef:
         name: batch-build
       params:
+        - name: build_outdated_only
+          value: "$(params.build_outdated_only)"
         - name: build_configs
           value:
-          - agent-installer-api-server
-          - agent-installer-csr-approver
+          - installer-artifacts
           - artifacts
-          - tools
-          - haproxy-router
-          - ovn-kubernetes
-          - ovn-kubernetes-base
-          - machine-os-images
           - deployer
+          - haproxy-router
+          - machine-os-images
+          - ovn-kubernetes
+          - ovn-kubernetes-microshift
+          - tools
     - name: batch-03
       timeout: "1h0m0s"
       runAfter:
@@ -237,11 +268,12 @@ spec:
       taskRef:
         name: batch-build
       params:
+        - name: build_outdated_only
+          value: "$(params.build_outdated_only)"
         - name: build_configs
           value:
-          - tests
           - network-tools
-          - ovn-kubernetes-microshift
+          - tests
     - name: new-release
       timeout: "2h0m0s"
       runAfter:
@@ -259,3 +291,5 @@ spec:
           value: $(params.result-image)
         - name: release-image-name
           value: $(params.result-image-name)
+        - name: new-release-dry-run
+          value: $(params.new-release-dry-run)

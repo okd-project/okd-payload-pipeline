@@ -18,6 +18,15 @@ patches:
     target:
       kind: BuildConfig
       name: etcd
+  - patch: |-
+      - op: add
+        path: /spec/strategy/dockerStrategy/buildArgs
+        value:
+          - name: OCP_VERSION
+            value: "4.13"
+    target:
+      kind: BuildConfig
+      name: base
     # The next patch will replace the build-stage images used by the upstream repositories' Dockerfiles with the okd builder one.
     # In particular, each stage extending from an image contained in the `as` array below will start from the ImageStreamTag release:builder
     # In the future, we may change this to be more specific to the builder image features. E.g., we may need one builder image per golang version.
@@ -49,6 +58,55 @@ patches:
     target:
       kind: BuildConfig
       labelSelector: "builder-replacement!=skip"
+#
+# part of installer artifacts build sequence
+#
+  - patch: |-
+      - op: add
+        path: /metadata/labels
+        value:
+          builder-replacement: skip
+          change-build-arg-tags: "true"
+          part-of-artifacts: installer
+          resources-profile: high
+          skip-replace-cli: "true"
+      - op: add
+        path: /spec/output/to/kind
+        value: ImageStreamTag
+      - op: add
+        path: /spec/source/contextDir
+        value: "."
+      - op: add
+        path: /spec/source/images/-
+        value:
+          from:
+            kind: ImageStreamTag
+            name: 'release:forked-dockerfiles'
+          paths:
+          - sourcePath: /code/artifacts/installer-artifact.dockerfile
+            destinationDir: images/installer-artifacts
+      - op: add
+        path: /spec/strategy/dockerStrategy/imageOptimizationPolicy
+        value: SkipLayers
+      - op: add
+        path: /spec/strategy/dockerStrategy/dockerfilePath
+        value: images/installer-artifacts/installer-artifact.dockerfile
+      - op: add
+        path: /spec/source/dockerfile
+        value: |
+          FROM scratch
+    #  - op: add
+    #    path: /spec/strategy/dockerStrategy/from
+    #    value:
+    #      kind: "ImageStreamTag"
+    #      name: "release:builder"
+    target:
+      kind: BuildConfig
+      labelSelector: "part-of-artifacts=installer"
+#
+# end of installer artifacts build sequence
+#
+
   - patch: |-
       - op: add
         path: "/spec/source/images/-"
@@ -211,7 +269,11 @@ resources:
   - 10-ibm-vpc-block-csi-driver.yaml
   - 10-ibm-vpc-node-label-updater.yaml
   - 10-insights-operator.yaml
-  - 10-installer-artifacts.yaml
+#  - 10-installer-artifacts.yaml
+  - 10-installer-artifact-amd64-lnx.yaml
+  - 10-installer-artifact-amd64-mac.yaml
+  - 10-installer-artifact-arm64-lnx.yaml
+  - 10-installer-artifact-arm64-mac.yaml
   - 10-installer.yaml
   - 10-ironic-agent.yaml
   - 10-ironic-hardware-inventory-recorder.yaml
@@ -284,6 +346,7 @@ resources:
   - 20-deployer.yaml
   - 20-haproxy-router.yaml
   - 20-machine-os-images.yaml
+  - 20-installer-artifacts.yaml
   - 20-ovn-kubernetes-base.yaml
   - 20-tools.yaml
   - 30-fedora-coreos.yaml

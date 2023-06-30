@@ -10,11 +10,11 @@ spec:
       ref: release-4.12
     contextDir: .
     images:
-      - from:
-          kind: ImageStreamTag
-          name: 'tools:fedora36'
-        as:
-          - 'fedora:35'
+#      - from:
+#          kind: ImageStreamTag
+#          name: 'tools:fedora36'
+#        as:
+#          - 'fedora:35'
       - from:
           kind: ImageStreamTag
           name: 'tools:centos9'
