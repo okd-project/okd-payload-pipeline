@@ -51,9 +51,9 @@ spec:
             arguments:
               parameters:
                 - name: release-image-location
-                  value: '{{workflows.paramters.release-image-location}}'
+                  value: '{{workflow.parameters.release-image-location}}'
                 - name: release-mirror-location
-                  value: '{{workflows.paramters.release-mirror-location}}'
+                  value: '{{workflow.parameters.release-mirror-location}}'
     - name: build-os
       steps:
         - - arguments:
