@@ -21,4 +21,4 @@ spec:
   output:
     to:
       kind: ImageStreamTag
-      name: 'release:ovn-kubernetes-microshift'
+      name: 'release:ovn-kubernetes-microshift-rhel-9'
