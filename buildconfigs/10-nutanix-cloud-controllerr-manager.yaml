@@ -8,7 +8,7 @@ spec:
   source:
     type: Git
     git:
-      uri: 'https://github.com/openshift/cloud-provider-mutanix-cloud'
+      uri: 'https://github.com/openshift/cloud-provider-nutanix-cloud'
       ref: release-4.12
     contextDir: .
     images: []
@@ -23,4 +23,4 @@ spec:
   output:
     to:
       kind: ImageStreamTag
-      name: 'release:mutanix-cloud-controller-manager'
+      name: 'release:nutanix-cloud-controller-manager'
