@@ -1,7 +1,7 @@
 apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
-  name: mutanix-cloud-controller-manager
+  name: nutanix-cloud-controller-manager
   labels:
     resources-profile: high
 spec:
