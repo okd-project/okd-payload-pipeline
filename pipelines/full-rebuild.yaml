@@ -257,6 +257,7 @@ spec:
           - must-gather
           - bond-cni
           - network-metrics-daemon
+          - nutanix-cloud-controller-manager
           - nutanix-machine-controllers
           - oauth-apiserver
           - oauth-proxy

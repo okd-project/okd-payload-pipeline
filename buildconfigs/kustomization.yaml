@@ -237,6 +237,7 @@ resources:
   - 10-must-gather.yaml
   - 10-network-interface-bond-cni.yaml
   - 10-network-metrics-daemon.yaml
+  - 10-nutanix-cloud-controllerr-manager.yaml
   - 10-nutanix-machine-controllers.yaml
   - 10-oauth-apiserver.yaml
   - 10-oauth-proxy.yaml
