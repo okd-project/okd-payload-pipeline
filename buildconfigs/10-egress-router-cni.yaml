@@ -14,7 +14,7 @@ spec:
     type: Docker
     dockerStrategy:
       imageOptimizationPolicy: SkipLayers
-      dockerfilePath: Dockerfile.rhel8
+      dockerfilePath: Dockerfile.openshift
       from:
         kind: "ImageStreamTag"
         name: "release:base"
