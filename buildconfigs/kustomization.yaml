@@ -1,8 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: okd
-
 patches:
     # The next patch will replace the build-stage images used by the upstream repositories' Dockerfiles with the okd builder one.
     # In particular, each stage extending from an image contained in the `as` array below will start from the ImageStreamTag release:builder
