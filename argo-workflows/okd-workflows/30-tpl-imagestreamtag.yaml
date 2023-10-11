@@ -1,0 +1,53 @@
+kind: WorkflowTemplate
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: wftpl-imagestreamtag
+spec:
+  templates:
+    - name: delete-imagestreamtag
+      inputs:
+        parameters:
+          - name: name
+      dag:
+        tasks:
+          - name: delete-imagestreamtag
+            continueOn:
+              error: true
+              failed: true
+            inline:
+              resource:
+                action: delete
+                manifest: |
+                  apiVersion: image.openshift.io/v1
+                  kind: ImageStreamTag
+                  metadata:
+                    name: release:{{inputs.parameters.name}}
+    - name: replace-imagestreamtag
+      inputs:
+        parameters:
+          - name: image
+          - name: name
+      steps:
+        - - name: delete-imagestreamtags
+            template: delete-imagestreamtag
+            arguments:
+              parameters:
+                - name: name
+                  value: "{{inputs.parameters.name}}"
+        - - name: create-imagestreamtags
+            inline:
+              resource:
+                action: create
+                manifest: |
+                  apiVersion: image.openshift.io/v1
+                  kind: ImageStreamTag
+                  metadata:
+                    name: release:{{inputs.parameters.name}}
+                  tag:
+                    from:
+                      kind: DockerImage
+                      name: "{{inputs.parameters.image}}"
+                    referencePolicy:
+                      type: Source
+                    importPolicy:
+                      importMode: PreserveOriginal

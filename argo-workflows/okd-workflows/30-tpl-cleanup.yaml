@@ -1,0 +1,85 @@
+kind: WorkflowTemplate
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: wftpl-cleanup
+spec:
+  templates:
+    - name: cleanup
+      steps:
+        - - name: delete-release-imagestream
+            continueOn:
+              failed: true
+              error: true
+            inline:
+              resource:
+                action: delete
+                manifest: |
+                  apiVersion: image.openshift.io/v1
+                  kind: ImageStream
+                  metadata:
+                    name: "release"
+        - - name: delete-memoization-configmap
+            template: delete-memoization-configmap
+        - - name: create-release-imagestream
+            inline:
+              resource:
+                action: create
+                manifest: |
+                  apiVersion: image.openshift.io/v1
+                  kind: ImageStream
+                  metadata:
+                    name: release
+                  spec:
+                    lookupPolicy:
+                      local: true
+                    tags:
+                      - name: kuryr-cni
+                        from:
+                          kind: DockerImage
+                          name: registry.access.redhat.com/ubi9-minimal:9.0.0
+                        referencePolicy:
+                          type: Source
+                        importPolicy:
+                          importMode: PreserveOriginal
+                      - name: kuryr-controller
+                        from:
+                          kind: DockerImage
+                          name: registry.access.redhat.com/ubi9-minimal:9.0.0
+                        referencePolicy:
+                          type: Source
+                        importPolicy:
+                          importMode: PreserveOriginal
+                      - name: powervs-block-csi-driver-operator
+                        from:
+                          kind: DockerImage
+                          name: registry.access.redhat.com/ubi9-minimal:9.0.0
+                        referencePolicy:
+                          type: Source
+                        importPolicy:
+                          importMode: PreserveOriginal
+                      - name: powervs-block-csi-driver
+                        from:
+                          kind: DockerImage
+                          name: registry.access.redhat.com/ubi9-minimal:9.0.0
+                        referencePolicy:
+                          type: Source
+                        importPolicy:
+                          importMode: PreserveOriginal
+                      - name: ibmcloud-cluster-api-controllers
+                        from:
+                          kind: DockerImage
+                          name: registry.access.redhat.com/ubi9-minimal:9.0.0
+                        referencePolicy:
+                          type: Source
+                        importPolicy:
+                          importMode: PreserveOriginal
+    - name: delete-memoization-configmap
+      resource:
+        action: delete
+        manifest: |
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: build-okd
+            namespace: argo-workflows
+            # TODO: is there a way for this configmap to land in the same namespace as the workflow?

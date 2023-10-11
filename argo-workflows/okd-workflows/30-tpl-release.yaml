@@ -1,0 +1,73 @@
+kind: WorkflowTemplate
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: wftpl-release
+spec:
+  templates:
+    - name: mirror-initial-release
+      inputs:
+        parameters:
+          - name: registry-credentials-secret-ref
+          - name: release-image-location
+      containerSet:
+        containers:
+          - args:
+              - |
+                #!/bin/bash
+                set -ex
+                HOME=/tmp
+                cp /var/run/credentials/.dockerconfigjson /tmp/.dockerconfigjson
+                oc registry login -a /tmp/.dockerconfigjson
+                oc adm release mirror \
+                  --registry-config=/tmp/.dockerconfigjson \
+                  --from={{inputs.parameters.release-image-location}} \
+                  --to-image-stream=release \
+                  --insecure=true \
+                  --keep-manifest-list=true
+            command:
+              - bash
+              - -c
+            image: quay.io/okd/payload-workflows:latest
+            name: mirror-release
+            volumeMounts:
+              - mountPath: /var/run/credentials
+                name: credentials
+      volumes:
+        - name: credentials
+          secret:
+            secretName: '{{inputs.parameters.registry-credentials-secret-ref}}'
+    - name: package-release
+      inputs:
+        parameters:
+          - name: registry-credentials-secret-ref
+          - name: release-image-location
+          - name: release-mirror-location
+      containerSet:
+        containers:
+          - args:
+              - |
+                #!/bin/bash
+                set -ex
+                HOME=/tmp
+                cp /var/run/credentials/.dockerconfigjson /tmp/.dockerconfigjson
+                oc registry login -a /tmp/.dockerconfigjson
+                oc adm release new \
+                  --registry-config=/tmp/.dockerconfigjson \
+                  --from-image-stream release \
+                  --insecure=true \
+                  --mirror {{inputs.parameters.release-mirror-location}} \
+                  --to-image {{inputs.parameters.release-image-location}} \
+                  --name=$(echo "{{inputs.parameters.release-image-location}}" | cut -d: -f2) \
+                  --keep-manifest-list=true
+            command:
+              - bash
+              - -c
+            image: quay.io/okd/payload-workflows:latest
+            name: package-release
+            volumeMounts:
+              - mountPath: /var/run/credentials
+                name: credentials
+      volumes:
+        - name: credentials
+          secret:
+            secretName: '{{inputs.parameters.registry-credentials-secret-ref}}'

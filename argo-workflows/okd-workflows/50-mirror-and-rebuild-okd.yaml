@@ -1,0 +1,99 @@
+kind: WorkflowTemplate
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: mirror-and-rebuild-okd
+spec:
+  arguments:
+    parameters:
+      - name: architectures
+        default: arm64,amd64
+      - name: cleanup
+        default: "true"
+        enum:
+          - "true"
+          - "false"
+      - name: os-image
+        default: ""
+      - name: os-name
+        default: "fedora-coreos"
+      - name: os-buildconfig
+        default: "fedora-coreos"
+      - name: release-image-location
+        default: quay.io/<org>/okd-release-argo:4.13.0-0.okd-2021-12-11-200126
+      - name: release-mirror-location
+        default: quay.io/<org>/okd-release-argo
+      - default: registry-robot-token
+        name: registry-credentials-secret-ref
+      - name: initial-payload
+        default: ""
+      - name: buildconfigs-batched-list
+        value: |
+          [ [
+          { "buildConfig": "installer", "overrideRepoUrl": "", "overrideBranch": "" },
+          { "buildConfig": "machine-config-operator", "overrideRepoUrl": "https://github.com/aleskandro/machine-config-operator", "overrideBranch": "cs9-dockerfile" },
+          { "buildConfig": "contour", "overrideRepoUrl": "", "overrideBranch": "" },
+          { "buildConfig": "machine-os-images", "overrideRepoUrl": "", "overrideBranch": "" },
+          { "buildConfig": "baremetal-installer", "overrideRepoUrl": "", "overrideBranch": "" },
+          { "buildConfig": "contour-operator", "overrideRepoUrl": "", "overrideBranch": "" },
+          { "buildConfig": "cluster-update-keys", "overrideRepoUrl": "", "overrideBranch": "" },
+          { "buildConfig": "ovirt-installer", "overrideRepoUrl": "", "overrideBranch": "" },
+          { "buildConfig": "local-storage-static-provisioner", "overrideRepoUrl": "", "overrideBranch": "" },
+          { "buildConfig": "cluster-samples-operator", "overrideRepoUrl": "", "overrideBranch": "" },
+          { "buildConfig": "operator-marketplace", "overrideRepoUrl": "", "overrideBranch": "" },
+          { "buildConfig": "installer-artifacts", "overrideRepoUrl": "", "overrideBranch": "" },
+          { "buildConfig": "cli-artifacts", "overrideRepoUrl": "", "overrideBranch": "" },
+          { "buildConfig": "hyperkube", "overrideRepoUrl": "", "overrideBranch": "" },
+          { "buildConfig": "branding", "overrideRepoUrl": "", "overrideBranch": "" }
+          ], [
+          { "buildConfig": "artifacts", "overrideRepoUrl": "", "overrideBranch": "" }
+          ] ]
+#    { "buildConfig": "ironic", "overrideRepoUrl": "", "overrideBranch": "" },
+#    { "buildConfig": "ironic-agent", "overrideRepoUrl": "", "overrideBranch": "" },
+#    { "buildConfig": "ironic-hardware-inventory-recorder", "overrideRepoUrl": "", "overrideBranch": "" },
+      - name: delete-istags
+        value: |
+          [
+            "rhel-coreos",
+            "rhel-coreos-extensions",
+            "rhel-coreos-8",
+            "rhel-coreos-8-extensions",
+            "rhel-coreos-9",
+            "rhel-coreos-9-extensions",
+            "machine-config-operator",
+            "machine-os-content",
+            "contour",
+            "contour-operator",
+            "external-dns",
+            "external-dns-operator",
+            "installer",
+            "installer-artifacts",
+            "baremetal-installer",
+            "openstack-installer",
+            "upi-installer",
+            "libvirt-installer",
+            "ovirt-installer",
+            "local-storage-static-provisioner",
+            "sig-storage-local-static-provisioner",
+            "ironic",
+            "ironic-agent",
+            "ironic-hardware-inventory-recorder",
+            "ironic-inspector",
+            "ironic-ipa-downloader",
+            "cluster-samples-operator",
+            "operator-marketplace",
+            "cluster-update-keys",
+            "machine-os-images",
+            "windows-machine-config-bootstrapper-tests",
+            "windows-machine-config-operator-bundle",
+            "windows-machine-config-operator-test",
+            "hyperkube",
+            "cli-artifacts"
+          ]
+  entrypoint: entrypoint
+  templates:
+    - name: entrypoint
+      steps:
+        - - name: entrypoint
+            templateRef:
+              template: entrypoint
+              name: mirror-and-customize
