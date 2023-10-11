@@ -10,10 +10,17 @@ spec:
   arguments:
     parameters:
       - name: build-config-name
+        description: The name of a build config to use as source for the multiarch build
       - name: repo-url
         default: ""
+        description: | 
+          If a non-empty value is set for repo-url, the workflow will replace the URL of the source repo in 
+          the BuildConfig. This and branch are useful to test content from PR that are not merged yet.
       - name: branch
         default: ""
+        description: |
+          If a non-empty value is set for branch, the workflow will replace the ref of the source repo in the 
+          BuildConfig. This and repo-url are useful to test content from PR that are not merged yet.
       - name: architectures
   templates:
     - name: entrypoint

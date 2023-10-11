@@ -24,6 +24,7 @@ spec:
             inline:
               resource:
                 action: create
+                # TODO this step should be removed once all the images are build successfully.
                 manifest: |
                   apiVersion: image.openshift.io/v1
                   kind: ImageStream

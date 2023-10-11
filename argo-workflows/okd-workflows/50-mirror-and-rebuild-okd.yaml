@@ -7,26 +7,57 @@ spec:
     parameters:
       - name: architectures
         default: arm64,amd64
+        description: |
+          A comma-separated list of architectures. Nodes for all the architecture must
+          be available to run the workflow. For example `arm64,amd64`.
       - name: cleanup
         default: "true"
+        description: |
+          Setting this to 'true' will lead to the deletion of the ImageStreamTags already available and the cleanup of 
+          the memoization cache.
         enum:
           - "true"
           - "false"
       - name: os-image
         default: ""
+        description: |
+          If os-image is not empty,the workflow will import the given ref to the image as `machine-os-content` and 
+          with the name given in the `os-name` field. This is alternative to `os-buildconfig`.
       - name: os-name
         default: "fedora-coreos"
+        description: |
+          The name of the OS to be used by the final payload.
       - name: os-buildconfig
         default: "fedora-coreos"
+        description: |
+          The BuildConfig to build the machine-os-content from. This is alternative to `os-image`.
       - name: release-image-location
-        default: quay.io/<org>/okd-release-argo:4.13.0-0.okd-2021-12-11-200126
+        description: |
+          The destination registry and image to store the release image.
+          For example: quay.io/<org>/okd-release-argo:4.13.0-0.okd-2021-12-11-200126
       - name: release-mirror-location
-        default: quay.io/<org>/okd-release-argo
+        description: |
+          The destination registry and image to store the components images.
+          For example: quay.io/<org>/okd-release-argo
       - default: registry-robot-token
         name: registry-credentials-secret-ref
+        description: The name of a dockerconfigjson secret to use for authenticating external registries.
       - name: initial-payload
         default: ""
+        description: If this parameter is not empty, the workflow will mirror the given payload into the local release ImageStream
       - name: buildconfigs-batched-list
+        description: |
+          The `buildconfigs-batched-list` represents a list of JSON objects lists.
+          Each JSON object is composed by the fields `buildConfig`, `overrideRepoUrl` and `overrideBranch`.
+          If `overrideRepoURL` and `overrideBranch` are not empty, they replace the default repositories and ref stored
+          in the `BuildConfig`.
+          JSON Objects in the same list can run concurrently. Each list of list is guaranteed to run sequentially.
+          Therefore, if any BuildConfig A depends on another BuildConfig B, B should be part of a list previously to the 
+          one where the build parameters for A are defined.
+          [
+            [ { "buildConfig": "bc-1", "overrideRepoUrl": "....", "overrideBranch": "my-branch" } ],
+            [ { "buildConfig": "bc-2-depending-on-bc-1", "overrideRepoUrl": "....", "overrideBranch": "my-branch" } ]
+          ]
         value: |
           [ [
           { "buildConfig": "installer", "overrideRepoUrl": "", "overrideBranch": "" },
@@ -47,9 +78,10 @@ spec:
           ], [
           { "buildConfig": "artifacts", "overrideRepoUrl": "", "overrideBranch": "" }
           ] ]
-#    { "buildConfig": "ironic", "overrideRepoUrl": "", "overrideBranch": "" },
-#    { "buildConfig": "ironic-agent", "overrideRepoUrl": "", "overrideBranch": "" },
-#    { "buildConfig": "ironic-hardware-inventory-recorder", "overrideRepoUrl": "", "overrideBranch": "" },
+        # TODO: re-enable these BuildConfigs once ironic builds are fixed.
+        # { "buildConfig": "ironic", "overrideRepoUrl": "", "overrideBranch": "" },
+        # { "buildConfig": "ironic-agent", "overrideRepoUrl": "", "overrideBranch": "" },
+        # { "buildConfig": "ironic-hardware-inventory-recorder", "overrideRepoUrl": "", "overrideBranch": "" },
       - name: delete-istags
         value: |
           [

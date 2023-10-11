@@ -8,8 +8,7 @@ TODO
 
 TODO 
 
-#### Argo workflows & Multi-arch OKD
+#### Argo Workflows & Multi-arch OKD
 
-Refers to [argo-workflows/README.md](argo-workflows/README.md) for more details.
-
+Refers to [docs/argo-workflows-okd.md](docs/argo-workflows-okd.md) for more details.
 
