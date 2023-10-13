@@ -70,6 +70,7 @@ spec:
                 echo "git_uri=\"$git_uri\"" >> /tmp/volume/memoization-params
                 echo "git_revision=\"$git_revision\"" >> /tmp/volume/memoization-params
                 echo "name=\"{{inputs.parameters.build-config-name}}\"" >> /tmp/volume/memoization-params
+                echo "namespace=$(</run/secrets/kubernetes.io/serviceaccount/namespace)" >> /tmp/volume/memoization-params
             volumeMounts:
               - name: tmp
                 mountPath: /tmp/volume
@@ -84,12 +85,12 @@ spec:
                 if [ -z "${git_uri}" ] || [ -z "${git_revision}" ]; then
                   # TODO: this is for builds not using a git repo as source. For example, builds depending on previously
                   # built images should use another strategy to define the memoization key
-                  echo "${name}-$(cat /run/secrets/kubernetes.io/serviceaccount/namespace)-$(cat /proc/sys/kernel/random/uuid)" > /tmp/volume/memoization-key
+                  echo "${namespace}-${name}-$(</proc/sys/kernel/random/uuid)" > /tmp/volume/memoization-key
                   exit 0
                 fi
                 git_revision_sha="$(git ls-remote ${git_uri} refs/heads/${git_revision} | cut -f1)" 
                 echo "git_revision_sha=\"$git_revision_sha\"" >> /tmp/volume/memoization-params
-                key="${name}-${git_revision_sha}"
+                key="${namespace}-${name}-${git_revision_sha}"
                 echo "${key}" > /tmp/volume/memoization-key
             volumeMounts:
               - name: tmp
