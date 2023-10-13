@@ -68,6 +68,18 @@ patches:
     target:
       kind: BuildConfig
       labelSelector: "skip-replace-cli!=true"
+  - patch: |-
+      - op: add
+        path: "/spec/source/images/-"
+        value:
+          from:
+            kind: ImageStreamTag
+            name: 'release:artifacts'
+          as:
+            - 'registry.ci.openshift.org/origin/4.15:artifacts'
+    target:
+      kind: BuildConfig
+      name: fedora-coreos
   # TODO: tune resources req/lim
   - patch: |-
       - op: add
