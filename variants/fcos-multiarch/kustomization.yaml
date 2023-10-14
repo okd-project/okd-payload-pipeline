@@ -6,7 +6,6 @@ namespace: okd-fcos
 resources:
   - ../../argo-workflows/okd-workflows
   - ../../buildconfigs
-  - ./10-service-account.yaml
 
 patches:
   - patch: |-

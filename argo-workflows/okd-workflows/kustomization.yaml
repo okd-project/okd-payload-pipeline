@@ -1,4 +1,5 @@
 resources:
+  - 10-serviceaccount.yaml
   - 15-rbac.yaml
   - 20-build-multiarch-image.yaml
   - 30-tpl-build-memoize.yaml
