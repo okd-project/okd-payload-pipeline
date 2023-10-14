@@ -51,7 +51,7 @@ patches:
              - 'registry.ci.openshift.org/openshift/release:golang-1.21'
     target:
       kind: BuildConfig
-      labelSelector: "builder-replacement!=skip"
+      labelSelector: "skip-replace-builder!=true"
   - patch: |-
       - op: add
         path: "/spec/source/images/-"
