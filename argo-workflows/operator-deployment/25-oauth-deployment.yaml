@@ -32,6 +32,7 @@ spec:
             - --cookie-secure=true
             - --upstream=http://argo-server:2746
             - --email-domain=*
+            - --redirect-url=$(ARGO_WORKFLOWS_ROUTE)/oauth2/callback/
           image: image-registry.openshift-image-registry.svc:5000/openshift/oauth-proxy:v4.4
           imagePullPolicy: Always
           name: oauth-proxy
