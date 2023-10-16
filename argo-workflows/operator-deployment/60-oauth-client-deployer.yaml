@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: List
+items:
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    name: oauthclient-deployer
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: ClusterRole
+  metadata:
+    name: oauthclient-deployer
+  rules:
+    - apiGroups:
+        - oauth.openshift.io
+      resources:
+        - oauthclients
+      verbs:
+        - patch
+        - get
+      resourceNames:
+        - argo-workflows-oauth
+    - apiGroups:
+        - route.openshift.io
+      resources:
+        - routes
+      verbs:
+        - get
+      resourceNames:
+        - argo-server
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: ClusterRoleBinding
+  metadata:
+    name: oauthclient-deployer
+  subjects:
+    - kind: ServiceAccount
+      name: oauthclient-deployer
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: oauthclient-deployer

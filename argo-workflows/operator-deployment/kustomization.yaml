@@ -12,6 +12,9 @@ resources:
   - 25-oauth-service.yaml
   - 30-route.yaml
   - 50-oauth-client.yaml
+  - 60-oauth-client-deployer.yaml
+  - 70-oauth-client-job.yaml
+
 # For local testing
 patches:
   - target:
