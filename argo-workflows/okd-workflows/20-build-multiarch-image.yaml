@@ -4,8 +4,8 @@ metadata:
   name: build-multiarch-image
 spec:
   ttlStrategy:
-    secondsAfterFailure: 86400
-    secondsAfterSuccess: 8400
+    secondsAfterFailure: 259200 # 3 days
+    secondsAfterSuccess: 86400  # 1 day
   entrypoint: entrypoint
   arguments:
     parameters:

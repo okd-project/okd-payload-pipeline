@@ -107,7 +107,7 @@ spec:
           - name: architectures
       memoize:
         key: "{{inputs.parameters.memoization-key}}"
-        maxAge: "6h"
+        maxAge: "96h" # 4 days memoization
         cache:
           configMap:
             name: build-okd
