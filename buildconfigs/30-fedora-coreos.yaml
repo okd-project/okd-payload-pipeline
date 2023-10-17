@@ -12,11 +12,6 @@ spec:
     images:
       - from:
           kind: ImageStreamTag
-          name: 'release:artifacts'
-        as:
-          - 'registry.ci.openshift.org/origin/4.12:artifacts'
-      - from:
-          kind: ImageStreamTag
           name: 'tools:fedora-coreos'
         as:
           - 'quay.io/coreos-assembler/fcos:next-devel'

@@ -26,6 +26,22 @@ patches:
       labelSelector: "change-build-arg-tags==true"
       kind: BuildConfig
   - patch: |-
+      apiVersion: build.openshift.io/v1
+      kind: BuildConfig
+      metadata:
+        name: baremetal-installer
+        labels:
+          change-build-arg-tags: ""
+      spec:
+        strategy:
+          dockerStrategy:
+            buildArgs:
+              - name: "TAGS"
+                value: "fcos libvirt baremetal"
+    target:
+      kind: BuildConfig
+      name: baremetal-installer
+  - patch: |-
       - op: add
         path: "/spec/tags/-"
         value:

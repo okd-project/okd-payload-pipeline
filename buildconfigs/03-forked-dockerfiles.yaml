@@ -5,6 +5,7 @@ metadata:
   labels:
     skip-release-branch: "true"
     skip-replace-cli: "true"
+    skip-replace-builder: "true"
 spec:
   source:
     type: Git

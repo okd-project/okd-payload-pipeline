@@ -4,20 +4,6 @@ kind: Kustomization
 namespace: okd
 
 patches:
-  - patch: |-
-      - op: replace
-        path: "/spec/source/git/ref"
-        value: release-4.13
-    target:
-      kind: BuildConfig
-      labelSelector: "skip-release-branch!=true"
-  - patch: |-
-      - op: replace
-        path: "/spec/source/git/ref"
-        value: openshift-4.13
-    target:
-      kind: BuildConfig
-      name: etcd
     # The next patch will replace the build-stage images used by the upstream repositories' Dockerfiles with the okd builder one.
     # In particular, each stage extending from an image contained in the `as` array below will start from the ImageStreamTag release:builder
     # In the future, we may change this to be more specific to the builder image features. E.g., we may need one builder image per golang version.
@@ -29,26 +15,43 @@ patches:
               kind: "ImageStreamTag"
               name: "release:builder"
            as:
-              - 'registry.ci.openshift.org/ocp/builder:rhel-9-golang-1.20-openshift-4.13'
-              - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.20-openshift-4.13'
-              - 'registry.ci.openshift.org/ocp/builder:rhel-9-golang-1.19-openshift-4.13'
-              - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.19-openshift-4.13'
-              - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.19-openshift-4.12'
-              - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.12'
-              - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.11'
-              - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.17-openshift-4.11'
-              - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.17-openshift-4.10'
-              - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.16-openshift-4.10'
-              - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.16-openshift-4.9'
-              - 'registry.ci.openshift.org/ocp/builder:rhel-8-base-nodejs-openshift-4.13'
-              - 'registry.ci.openshift.org/ocp/builder:rhel-8-etcd-golang-1.16'
-              - 'registry.ci.openshift.org/openshift/release:golang-1.17'
-              - 'registry.ci.openshift.org/openshift/release:golang-1.18'
-              - 'registry.ci.openshift.org/openshift/release:golang-1.19'
-              - 'registry.ci.openshift.org/openshift/release:golang-1.20'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-8-base-nodejs-openshift-4.13'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-8-base-nodejs-openshift-4.14'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-8-base-nodejs-openshift-4.15'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-8-etcd-golang-1.16'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-8-etcd-golang-1.19'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-8-etcd-golang-1.20'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-8-etcd-golang-1.21'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.16-openshift-4.9'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.16-openshift-4.10'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.17-openshift-4.10'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.17-openshift-4.11'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.11'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.12'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.19-openshift-4.12'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.19-openshift-4.13'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.19-openshift-4.14'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.19-openshift-4.15'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.20-openshift-4.13'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.20-openshift-4.14'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.20-openshift-4.15'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-9-golang-1.18-openshift-4.14'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-9-golang-1.19-openshift-4.13'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-9-golang-1.19-openshift-4.14'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-9-golang-1.19-openshift-4.15'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-9-golang-1.20-openshift-4.13'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-9-golang-1.20-openshift-4.14'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-9-golang-1.20-openshift-4.15'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-9-golang-1.21-openshift-4.14'
+             - 'registry.ci.openshift.org/ocp/builder:rhel-9-golang-1.21-openshift-4.15'
+             - 'registry.ci.openshift.org/openshift/release:golang-1.17'
+             - 'registry.ci.openshift.org/openshift/release:golang-1.18'
+             - 'registry.ci.openshift.org/openshift/release:golang-1.19'
+             - 'registry.ci.openshift.org/openshift/release:golang-1.20'
+             - 'registry.ci.openshift.org/openshift/release:golang-1.21'
     target:
       kind: BuildConfig
-      labelSelector: "builder-replacement!=skip"
+      labelSelector: "skip-replace-builder!=true"
   - patch: |-
       - op: add
         path: "/spec/source/images/-"
@@ -60,9 +63,23 @@ patches:
             - 'registry.ci.openshift.org/ocp/4.11:cli'
             - 'registry.ci.openshift.org/ocp/4.12:cli'
             - 'registry.ci.openshift.org/ocp/4.13:cli'
+            - 'registry.ci.openshift.org/ocp/4.14:cli'
+            - 'registry.ci.openshift.org/ocp/4.15:cli'
     target:
       kind: BuildConfig
       labelSelector: "skip-replace-cli!=true"
+  - patch: |-
+      - op: add
+        path: "/spec/source/images/-"
+        value:
+          from:
+            kind: ImageStreamTag
+            name: 'release:artifacts'
+          as:
+            - 'registry.ci.openshift.org/origin/4.15:artifacts'
+    target:
+      kind: BuildConfig
+      name: fedora-coreos
   # TODO: tune resources req/lim
   - patch: |-
       - op: add
