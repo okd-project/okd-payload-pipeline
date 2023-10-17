@@ -1,0 +1,136 @@
+kind: WorkflowTemplate
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: wftpl-build-memoize
+spec:
+  templates:
+    - name: multiarch-build # formerly build-multiarch-workflow
+      inputs:
+        parameters:
+          - name: architectures
+          - name: build-config-name
+          - name: branch
+            default: ""
+          - name: repo-url
+            default: ""
+      #retryStrategy:
+      #  backoff:
+      #    duration: 1m
+      #    factor: "2"
+      #    maxDuration: 60m
+      #  limit: "3"
+      #  retryPolicy: Always
+      steps:
+        - - name: generate-memoization-key
+            arguments:
+              parameters:
+                - name: build-config-name
+                  value: "{{inputs.parameters.build-config-name}}"
+            template: prepare-memoization-key
+        - - name: multiarch-build
+            template: multiarch-builds
+            arguments:
+              parameters:
+                - name: architectures
+                  value: "{{inputs.parameters.architectures}}"
+                - name: branch
+                  value: "{{inputs.parameters.branch}}"
+                - name: build-config-name
+                  value: "{{inputs.parameters.build-config-name}}"
+                - name: memoization-key
+                  value: "{{steps.generate-memoization-key.outputs.parameters.memoization-key}}"
+                - name: repo-url
+                  value: "{{inputs.parameters.repo-url}}"
+    - name: prepare-memoization-key
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      inputs:
+        parameters:
+          - name: build-config-name
+      outputs:
+        parameters:
+          - name: memoization-params
+            valueFrom:
+              path: /tmp/volume/memoization-params
+          - name: memoization-key
+            valueFrom:
+              path: /tmp/volume/memoization-key
+      containerSet:
+        containers:
+          - name: prepare-memoization-params
+            image: quay.io/okd/payload-workflows:latest
+            command: [bash, -c]
+            args:
+              - |
+                set -ex
+                echo "Preparing memoization params"
+                git_uri=$(oc get bc {{inputs.parameters.build-config-name}} -o jsonpath='{.spec.source.git.uri}')
+                git_revision=$(oc get bc {{inputs.parameters.build-config-name}} -o jsonpath='{.spec.source.git.ref}')
+                echo "git_uri=\"$git_uri\"" >> /tmp/volume/memoization-params
+                echo "git_revision=\"$git_revision\"" >> /tmp/volume/memoization-params
+                echo "name=\"{{inputs.parameters.build-config-name}}\"" >> /tmp/volume/memoization-params
+                echo "namespace=$(</run/secrets/kubernetes.io/serviceaccount/namespace)" >> /tmp/volume/memoization-params
+            volumeMounts:
+              - name: tmp
+                mountPath: /tmp/volume
+          - name: main
+            image: quay.io/okd/payload-workflows:latest
+            command: [sh, -c]
+            args:
+              - |
+                set -exo pipefail
+                echo "Getting git revision sha"
+                . /tmp/volume/memoization-params
+                if [ -z "${git_uri}" ] || [ -z "${git_revision}" ]; then
+                  # TODO: this is for builds not using a git repo as source. For example, builds depending on previously
+                  # built images should use another strategy to define the memoization key
+                  echo "${namespace}-${name}-$(</proc/sys/kernel/random/uuid)" > /tmp/volume/memoization-key
+                  exit 0
+                fi
+                git_revision_sha="$(git ls-remote ${git_uri} refs/heads/${git_revision} | cut -f1)" 
+                echo "git_revision_sha=\"$git_revision_sha\"" >> /tmp/volume/memoization-params
+                key="${namespace}-${name}-${git_revision_sha}"
+                echo "${key}" > /tmp/volume/memoization-key
+            volumeMounts:
+              - name: tmp
+                mountPath: /tmp/volume
+            dependencies:
+              - prepare-memoization-params
+    - name: multiarch-builds
+      inputs:
+        parameters:
+          - name: build-config-name
+          - name: repo-url
+          - name: branch
+          - name: memoization-key
+          - name: architectures
+      memoize:
+        key: "{{inputs.parameters.memoization-key}}"
+        maxAge: "96h" # 4 days memoization
+        cache:
+          configMap:
+            name: build-okd
+      resource:
+        action: create
+        successCondition: status.phase == Succeeded
+        failureCondition: status.phase in (Failed, Error)
+        setOwnerReference: true
+        manifest: |
+          apiVersion: argoproj.io/v1alpha1
+          kind: Workflow
+          metadata:
+            generateName: {{inputs.parameters.build-config-name}}-wf-
+          spec:
+            arguments:
+              parameters:
+              - name: build-config-name
+                value: "{{inputs.parameters.build-config-name}}"
+              - name: architectures
+                value: "{{inputs.parameters.architectures}}"
+              - name: branch
+                value: "{{inputs.parameters.branch}}"
+              - name: repo-url
+                value: "{{inputs.parameters.repo-url}}"
+            workflowTemplateRef:
+              name: build-multiarch-image

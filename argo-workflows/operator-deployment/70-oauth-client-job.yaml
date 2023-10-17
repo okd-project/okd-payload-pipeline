@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-oauth-client
+spec:
+  selector: {}
+  template:
+    metadata:
+      name: create-oauth-client-pod
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: oauthclient-deployer
+      containers:
+        - image: quay.io/okd/payload-workflows:latest
+          imagePullPolicy: Always
+          name: create-oauth-client
+          command:
+            - bash
+            - -c
+          args:
+            - |
+              #!/bin/bash
+              ARGO_URL=$(oc get route -n argo-workflows argo-server -o jsonpath='{.spec.host}')
+              oc patch oauthclient.oauth.openshift.io/argo-workflows-oauth --type merge \
+                --patch='{"redirectURIs":["'https://${ARGO_URL}'/oauth/callback"]}'

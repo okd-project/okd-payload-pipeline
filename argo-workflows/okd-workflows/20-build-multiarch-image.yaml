@@ -1,15 +1,26 @@
 apiVersion: argoproj.io/v1alpha1
-kind: ClusterWorkflowTemplate
+kind: WorkflowTemplate
 metadata:
   name: build-multiarch-image
 spec:
   ttlStrategy:
-    secondsAfterFailure: 86400
-    secondsAfterSuccess: 8400
+    secondsAfterFailure: 259200 # 3 days
+    secondsAfterSuccess: 86400  # 1 day
   entrypoint: entrypoint
   arguments:
     parameters:
       - name: build-config-name
+        description: The name of a build config to use as source for the multiarch build
+      - name: repo-url
+        default: ""
+        description: | 
+          If a non-empty value is set for repo-url, the workflow will replace the URL of the source repo in 
+          the BuildConfig. This and branch are useful to test content from PR that are not merged yet.
+      - name: branch
+        default: ""
+        description: |
+          If a non-empty value is set for branch, the workflow will replace the ref of the source repo in the 
+          BuildConfig. This and repo-url are useful to test content from PR that are not merged yet.
       - name: architectures
   templates:
     - name: entrypoint
@@ -26,6 +37,10 @@ spec:
               parameters:
                 - name: build-config-name
                   value: "{{workflow.parameters.build-config-name}}"
+                - name: repo-url
+                  value: "{{workflow.parameters.repo-url}}"
+                - name: branch
+                  value: "{{workflow.parameters.branch}}"
                 - name: architecture
                   value: "{{item}}"
             withParam: "{{steps.generate-params.outputs.result}}"
@@ -43,6 +58,8 @@ spec:
           - name: architecture
             description: The architecture to build the manifest for
           - name: build-config-name
+          - name: repo-url
+          - name: branch
       outputs:
         parameters:
           - name: final-image
@@ -57,6 +74,10 @@ spec:
                   value: "{{inputs.parameters.architecture}}"
                 - name: build-config-name
                   value: "{{inputs.parameters.build-config-name}}"
+                - name: repo-url
+                  value: "{{inputs.parameters.repo-url}}"
+                - name: branch
+                  value: "{{inputs.parameters.branch}}"
         - - name: build-run-and-wait
             template: build-run-and-wait
             arguments:
@@ -68,6 +89,8 @@ spec:
         parameters:
           - name: architecture
           - name: build-config-name
+          - name: repo-url
+          - name: branch
       outputs:
         parameters:
           - name: build
@@ -78,17 +101,13 @@ spec:
               path: /tmp/final-image
       script:
         # TODO: Can I use a resource template + action get + jqFilter in the output?
-        # TODO: use an image including both kubectl and yq?
-        image: image-registry.openshift-image-registry.svc:5000/openshift/cli
+        image: quay.io/okd/payload-workflows:latest
         command:
           - bash
         source: |
           #!/bin/bash
           set -xeo pipefail
-          arch=$(uname -m | sed 's/aarch64/arm64/;s/x86_64/amd64/;')
-          wget -O /tmp/yq "https://github.com/mikefarah/yq/releases/download/v4.32.2/yq_linux_${arch}"
-          chmod +x /tmp/yq
-          /tmp/yq eval-all '
+          yq eval-all '
             select(fileIndex == 0) * select(fileIndex == 1) |
             del(.spec.failedBuildsHistoryLimit) |
             del(.status) |
@@ -109,8 +128,11 @@ spec:
                 kubernetes.io/arch: {{inputs.parameters.architecture}}
           EOF
           
-          image=$(/tmp/yq -r '.spec.output.to.name' /tmp/build.yaml)
-          namespace=$(/tmp/yq -r '.spec.output.to.namespace' /tmp/build.yaml)
+          [ -n "{{inputs.parameters.repo-url}}" ] && yq -i '.spec.source.git.uri = "{{inputs.parameters.repo-url}}"' /tmp/build.yaml
+          [ -n "{{inputs.parameters.branch}}" ] && yq -i '.spec.source.git.ref = "{{inputs.parameters.branch}}"' /tmp/build.yaml
+          
+          image=$(yq -r '.spec.output.to.name' /tmp/build.yaml)
+          namespace=$(yq -r '.spec.output.to.namespace' /tmp/build.yaml)
           if [ "$namespace" == "null" ]; then
             # Use the namespace associated with the service account running this container
             namespace=$(</var/run/secrets/kubernetes.io/serviceaccount/namespace)
@@ -133,17 +155,12 @@ spec:
           - name: final-image
           - name: architectures
       script:
-        image: image-registry.openshift-image-registry.svc:5000/openshift/cli
+        image: quay.io/okd/payload-workflows:latest
         command:
           - bash
         source: |
           #!/bin/bash
           set -euo pipefail
-          # TODO another image? The current official manifest-tool image extends from scratch 
-          # and we cannot use files redirection in the args list if using it
-          wget -O /tmp/binaries-manifest-tool.tar.gz https://github.com/estesp/manifest-tool/releases/download/v2.0.8/binaries-manifest-tool-2.0.8.tar.gz
-          tar -C /tmp --transform 's/manifest-tool-linux-.*/mtl/' \
-            -xvf /tmp/binaries-manifest-tool.tar.gz manifest-tool-linux-$(uname -m | sed 's/aarch64/arm64/;s/x86_64/amd64/')
           image='{{inputs.parameters.final-image}}'
           image="${image%\",*}"
           image="${image#\[\"}"
@@ -160,7 +177,7 @@ spec:
                 os: linux"
           done
           echo "${MANIFEST_LIST}"          
-          /tmp/mtl --insecure --username k8s --password "$(</var/run/secrets/kubernetes.io/serviceaccount/token)" \
+          mtl --insecure --username k8s --password "$(</var/run/secrets/kubernetes.io/serviceaccount/token)" \
             push from-spec <(echo "${MANIFEST_LIST}")
           
           echo "[INFO] Manifest list pushed to ${image}. Deleting individual manifests..."
@@ -177,7 +194,7 @@ spec:
         parameters:
           - name: list
       script:
-        image: image-registry.openshift-image-registry.svc:5000/openshift/python:3.9-ubi9
+        image: quay.io/okd/payload-workflows:latest
         command: [python]
         source: |
           import json

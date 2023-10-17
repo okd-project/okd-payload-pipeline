@@ -3,6 +3,5 @@ apiVersion: oauth.openshift.io/v1
 metadata:
   name: argo-workflows-oauth
   namespace: argo-workflows
-secret: "argo-oauth-proxy-secret"
-redirectURIs: []
+secret: argo-oauth-proxy-secret
 grantMethod: prompt

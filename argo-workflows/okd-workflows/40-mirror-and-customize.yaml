@@ -1,0 +1,209 @@
+kind: WorkflowTemplate
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: mirror-and-customize
+spec:
+  entrypoint: entrypoint
+  arguments:
+    parameters:
+      - name: architectures
+        value: arm64,amd64
+        description: |
+          A comma-separated list of architectures. Nodes for all the architecture must
+          be available to run the workflow. For example `arm64,amd64`.
+      - name: cleanup
+        description: |
+          Setting this to 'true' will lead to the deletion of the ImageStreamTags already available and the cleanup of 
+          the memoization cache.
+        enum:
+          - "false"
+          - "true"
+      - name: os-image
+        default: ""
+        description: |
+          If os-image is not empty,the workflow will import the given ref to the image as `machine-os-content` and 
+          with the name given in the `os-name` field. This is alternative to `os-buildconfig`.
+        value: ""
+      - name: os-name
+        enum:
+          - fedora-coreos
+          - centos-stream-coreos-9
+          - rhel-coreos
+        description: |
+          The name of the OS to be used by the final payload.
+      - default: ""
+        name: os-buildconfig
+        value: ""
+        description: |
+          The BuildConfig to build the machine-os-content from. This is alternative to `os-image`.
+      - name: release-image-location
+        description: |
+          The destination registry and image to store the release image.
+          For example: quay.io/<org>/okd-release-argo:4.13.0-0.okd-2021-12-11-200126
+      - name: release-mirror-location
+        description: |
+          The destination registry and image to store the components images.
+          For example: quay.io/<org>/okd-release-argo
+      - default: registry-robot-token
+        name: registry-credentials-secret-ref
+        description: The name of a dockerconfigjson secret to use for authenticating external registries.
+      - name: initial-payload
+        description: If this parameter is not empty, the workflow will mirror the given payload into the local release ImageStream
+      - name: buildconfigs-batched-list
+        description: |
+          The `buildconfigs-batched-list` represents a list of JSON objects lists.
+          Each JSON object is composed by the fields `buildConfig`, `overrideRepoUrl` and `overrideBranch`.
+          If `overrideRepoURL` and `overrideBranch` are not empty, they replace the default repositories and ref stored
+          in the `BuildConfig`.
+          JSON Objects in the same list can run concurrently. Each list of list is guaranteed to run sequentially.
+          Therefore, if any BuildConfig A depends on another BuildConfig B, B should be part of a list previously to the 
+          one where the build parameters for A are defined.
+          [
+            [ { "buildConfig": "bc-1", "overrideRepoUrl": "....", "overrideBranch": "my-branch" } ],
+            [ { "buildConfig": "bc-2-depending-on-bc-1", "overrideRepoUrl": "....", "overrideBranch": "my-branch" } ]
+          ]
+      - name: delete-istags
+        description: |
+          Any ImageStreamTags listed here will be deleted before starting the batched builds.
+        value: '[]'
+  templates:
+    - name: entrypoint
+      steps:
+        - - name: cleanup
+            when: "{{workflow.parameters.cleanup}}==true"
+            templateRef:
+              name: wftpl-cleanup
+              template: cleanup
+        - - name: mirror-initial-release
+            when: '''{{workflow.parameters.initial-payload}}''!='''''
+            templateRef:
+              name: wftpl-release
+              template: mirror-initial-release
+            arguments:
+              parameters:
+                - name: registry-credentials-secret-ref
+                  value: "{{workflow.parameters.registry-credentials-secret-ref}}"
+                - name: release-image-location
+                  value: "{{workflow.parameters.initial-payload}}"
+        - - name: delete-istags
+            when: '''{{workflow.parameters.initial-payload}}''!='''''
+            templateRef:
+              name: wftpl-imagestreamtag
+              template: delete-imagestreamtag
+            arguments:
+              parameters:
+                - name: name
+                  value: "{{item}}"
+            withParam: "{{workflow.parameters.delete-istags}}"
+        - - name: recreate-os-imagestreamtags
+            when: '''{{workflow.parameters.os-image}}''!='''''
+            templateRef:
+              name: wftpl-imagestreamtag
+              template: replace-imagestreamtag
+            arguments:
+              parameters:
+                - name: name
+                  value: "{{item}}"
+                - name: image
+                  value: "{{workflow.parameters.os-image}}"
+            withItems:
+              - "{{workflow.parameters.os-name}}"
+              - machine-os-content
+        - - name: initial
+            template: batches
+            arguments:
+              parameters:
+                - name: buildconfigs-batched-list
+                  value: |
+                    [
+                      [
+                        { "buildConfig": "builder", "overrideRepoUrl": "", "overrideBranch": "" },
+                        { "buildConfig": "forked-dockerfiles", "overrideRepoUrl": "", "overrideBranch": "" },
+                        { "buildConfig": "base", "overrideRepoUrl": "", "overrideBranch": "" } 
+                    
+                      ],
+                      [ { "buildConfig": "cli", "overrideRepoUrl": "", "overrideBranch": "" } ]
+                    ]
+        - - name: batches
+            template: batches
+            arguments:
+              parameters:
+                - name: buildconfigs-batched-list
+                  value: "{{workflow.parameters.buildconfigs-batched-list}}"
+        - - name: build-os
+            template: build-os
+            when: '''{{workflow.parameters.os-buildconfig}}''!='''''
+        - - name: package-release
+            templateRef:
+              name: wftpl-release
+              template: package-release
+            arguments:
+              parameters:
+                - name: registry-credentials-secret-ref
+                  value: "{{workflow.parameters.registry-credentials-secret-ref}}"
+                - name: release-image-location
+                  value: '{{workflow.parameters.release-image-location}}'
+                - name: release-mirror-location
+                  value: '{{workflow.parameters.release-mirror-location}}'
+    - name: batches
+      parallelism: 1
+      failFast: true
+      inputs:
+        parameters:
+          - name: buildconfigs-batched-list
+      steps:
+        - - template: single-batch
+            withParam: "{{inputs.parameters.buildconfigs-batched-list}}"
+            arguments:
+              parameters:
+                - name: buildconfigs-list
+                  value: "{{item}}"
+    - name: single-batch
+      failFast: true
+      parallelism: 8
+      inputs:
+        parameters:
+          - name: buildconfigs-list
+      steps:
+        - - name: single-batch
+            templateRef:
+              name: wftpl-build-memoize
+              template: multiarch-build
+            arguments:
+              parameters:
+                - name: build-config-name
+                  value: "{{item.buildConfig}}"
+                - name: repo-url
+                  value: "{{item.overrideRepoUrl}}"
+                - name: branch
+                  value: "{{item.overrideBranch}}"
+                - name: architectures
+                  value: "{{workflow.parameters.architectures}}"
+            withParam: "{{inputs.parameters.buildconfigs-list}}"
+    - name: build-os
+      steps:
+        - - arguments:
+              parameters:
+                - name: build-config-name
+                  value: '{{workflow.parameters.os-buildconfig}}'
+                - name: architectures
+                  value: "{{workflow.parameters.architectures}}"
+            name: build-os
+            templateRef:
+              name: wftpl-build-memoize
+              template: multiarch-build
+        - - inline:
+              resource:
+                action: apply
+                manifest: |
+                  apiVersion: image.openshift.io/v1
+                  kind: ImageStreamTag
+                  metadata:
+                    name: release:machine-os-content
+                  tag:
+                    from:
+                      kind: ImageStreamTag
+                      name: "release:{{workflow.parameters.os-name}}"
+                    importPolicy:
+                      importMode: PreserveOriginal
+            name: set-machine-os-content

@@ -1,0 +1,290 @@
+kind: WorkflowTemplate
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: build-okd-from-scratch
+spec:
+  arguments:
+    parameters:
+      - name: architectures
+        default: arm64,amd64
+        description: |
+          A comma-separated list of architectures. Nodes for all the architecture must
+          be available to run the workflow. For example `arm64,amd64`.
+      - name: cleanup
+        default: "true"
+        description: |
+          Setting this to 'true' will lead to the deletion of the ImageStreamTags already available and the cleanup of 
+          the memoization cache.
+        enum:
+          - "true"
+          - "false"
+      - name: os-image
+        default: ""
+        description: |
+          If os-image is not empty,the workflow will import the given ref to the image as `machine-os-content` and 
+          with the name given in the `os-name` field. This is alternative to `os-buildconfig`.
+      - name: os-name
+        default: "fedora-coreos"
+        description: |
+          The name of the OS to be used by the final payload.
+      - name: os-buildconfig
+        default: "fedora-coreos"
+        description: |
+          The BuildConfig to build the machine-os-content from. This is alternative to `os-image`.
+      - name: release-image-location
+        description: |
+          The destination registry and image to store the release image.
+          For example: quay.io/<org>/okd-release-argo:4.13.0-0.okd-2021-12-11-200126
+      - name: release-mirror-location
+        description: |
+          The destination registry and image to store the components images.
+          For example: quay.io/<org>/okd-release-argo
+      - default: registry-robot-token
+        name: registry-credentials-secret-ref
+        description: The name of a dockerconfigjson secret to use for authenticating external registries.
+      - name: initial-payload
+        default: ""
+        description: |
+          The `buildconfigs-batched-list` represents a list of JSON objects lists.
+          Each JSON object is composed by the fields `buildConfig`, `overrideRepoUrl` and `overrideBranch`.
+          If `overrideRepoURL` and `overrideBranch` are not empty, they replace the default repositories and ref stored
+          in the `BuildConfig`.
+          JSON Objects in the same list can run concurrently. Each list of list is guaranteed to run sequentially.
+          Therefore, if any BuildConfig A depends on another BuildConfig B, B should be part of a list previously to the 
+          one where the build parameters for A are defined.
+          [
+            [ { "buildConfig": "bc-1", "overrideRepoUrl": "....", "overrideBranch": "my-branch" } ],
+            [ { "buildConfig": "bc-2-depending-on-bc-1", "overrideRepoUrl": "....", "overrideBranch": "my-branch" } ]
+          ]
+      - name: buildconfigs-batched-list
+        description: |
+          Any ImageStreamTags listed here will be deleted before starting the batched builds.
+        value: |
+          [ [
+            {"buildConfig":"agent-installer-node-agent","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"agent-installer-orchestrator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"alibaba-cloud-controller-manager","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"alibaba-cloud-csi-driver","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"alibaba-disk-csi-driver-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"alibaba-machine-controllers","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"apiserver-network-proxy","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"aws-cloud-controller-manager","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"aws-cluster-api-controllers","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"aws-ebs-csi-driver-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"aws-ebs-csi-driver","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"aws-machine-controllers","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"aws-pod-identity-webhook","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"azure-cloud-controller-manager","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"azure-cloud-node-manager","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"azure-cluster-api-controllers","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"azure-disk-csi-driver-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"azure-disk-csi-driver","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"azure-file-csi-driver-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"azure-file-csi-driver","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"azure-machine-controllers","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"baremetal-machine-controllers","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"baremetal-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"baremetal-runtimecfg","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"branding","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cloud-credential-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cloud-network-config-controller","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-authentication-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-autoscaler-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-autoscaler","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-baremetal-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-bootstrap","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-capi-controllers","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-capi-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-cloud-controller-manager-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-config-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-control-plane-machine-set-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-csi-snapshot-controller-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-dns-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-etcd-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-image-registry-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-ingress-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-kube-apiserver-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-kube-cluster-api-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-kube-controller-manager-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-kube-scheduler-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-kube-storage-version-migrator-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-machine-approver","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-monitoring-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-network-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-openshift-apiserver-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-openshift-controller-manager-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-policy-controller","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-samples-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-storage-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-update-keys","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-version-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"configmap-reloader","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"console-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"container-networking-plugins","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"contour-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"contour","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"coredns","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"csi-driver-manila-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"csi-driver-manila","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"csi-driver-nfs","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"csi-driver-shared-resource-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"csi-driver-shared-resource-webhook","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"csi-driver-shared-resource","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"csi-external-attacher","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"csi-external-provisioner","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"csi-external-resizer","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"csi-external-snapshotter","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"csi-livenessprobe","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"csi-node-driver-registrar","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"csi-snapshot-controller","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"csi-snapshot-validation-webhook","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"docker-builder","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"docker-registry","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"egress-router-cni","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"etcd","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"external-dns","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"gcp-cloud-controller-manager","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"gcp-cluster-api-controllers","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"gcp-machine-controllers","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"gcp-pd-csi-driver-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"gcp-pd-csi-driver","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"haproxy-router-base","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"hypershift","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"ibm-cloud-controller-manager","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"ibm-vpc-block-csi-driver-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"ibm-vpc-block-csi-driver","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"ibm-vpc-node-label-updater","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"ibmcloud-machine-controllers","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"insights-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"ironic-agent","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"ironic-machine-os-downloader","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"ironic-static-ip-manager","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"k8s-prometheus-adapter","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"keepalived-ipfailover","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"kube-proxy","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"kube-rbac-proxy","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"kube-state-metrics","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"kube-storage-version-migrator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"local-storage-static-provisioner","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"machine-api-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"machine-config-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"machine-image-customization-controller","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"multus-admission-controller","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"multus-cni","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"multus-networkpolicy","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"multus-route-override-cni","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"multus-whereabouts-ipam-cni","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"must-gather","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"bond-cni","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"network-metrics-daemon","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"nutanix-machine-controllers","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"oauth-apiserver","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"oauth-proxy","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"oauth-server","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"oc-mirror","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cli-artifacts","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"openshift-apiserver","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"openshift-controller-manager","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"openshift-state-metrics","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"openstack-cinder-csi-driver-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"openstack-cinder-csi-driver","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"openstack-cloud-controller-manager","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"openstack-machine-api-provider","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"openstack-machine-controllers","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"operator-lifecycle-manager","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"operator-marketplace","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"ovirt-csi-driver-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"ovirt-csi-driver","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"ovirt-installer","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"ovirt-machine-controllers","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"pod","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"powervs-cloud-controller-manager","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"powervs-machine-controllers","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"prom-label-proxy","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"prometheus-alertmanager","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"prometheus-config-reloader","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"prometheus-node-exporter","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"prometheus-operator-admission-webhook","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"prometheus-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"prometheus","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"route-controller-manager","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"service-ca-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"telemeter","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"thanos","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"vsphere-cloud-controller-manager","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"vsphere-cluster-api-controllers","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"vsphere-csi-driver-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"vsphere-csi-driver-syncer","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"vsphere-csi-driver","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"vsphere-problem-detector","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"cluster-node-tuning-operator","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"ironic","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"ironic-hardware-inventory-recorder","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"libvirt-machine-controllers","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"operator-registry","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"sdn","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"console","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"baremetal-installer","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"installer-artifacts","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"installer","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"hyperkube","overrideRepoUrl":"","overrideBranch":""}
+          ], [
+            {"buildConfig":"agent-installer-api-server","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"agent-installer-csr-approver","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"artifacts","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"tools","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"haproxy-router","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"ovn-kubernetes-base","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"machine-os-images","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"deployer","overrideRepoUrl":"","overrideBranch":""}
+          ], [
+            {"buildConfig":"tests","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"network-tools","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"ovn-kubernetes-microshift","overrideRepoUrl":"","overrideBranch":""},
+            {"buildConfig":"ovn-kubernetes","overrideRepoUrl":"","overrideBranch":""}
+          ] ]
+      - name: delete-istags
+        value: |
+          [
+            "rhel-coreos",
+            "rhel-coreos-extensions",
+            "rhel-coreos-8",
+            "rhel-coreos-8-extensions",
+            "rhel-coreos-9",
+            "rhel-coreos-9-extensions",
+            "machine-config-operator",
+            "machine-os-content",
+            "contour",
+            "contour-operator",
+            "external-dns",
+            "external-dns-operator",
+            "installer",
+            "installer-artifacts",
+            "baremetal-installer",
+            "openstack-installer",
+            "upi-installer",
+            "libvirt-installer",
+            "ovirt-installer",
+            "local-storage-static-provisioner",
+            "sig-storage-local-static-provisioner",
+            "ironic",
+            "ironic-agent",
+            "ironic-hardware-inventory-recorder",
+            "ironic-inspector",
+            "ironic-ipa-downloader",
+            "cluster-samples-operator",
+            "operator-marketplace",
+            "cluster-update-keys",
+            "machine-os-images",
+            "windows-machine-config-bootstrapper-tests",
+            "windows-machine-config-operator-bundle",
+            "windows-machine-config-operator-test"
+          ]
+  entrypoint: entrypoint
+  templates:
+    - name: entrypoint
+      steps:
+        - - name: entrypoint
+            templateRef:
+              template: entrypoint
+              name: mirror-and-customize
