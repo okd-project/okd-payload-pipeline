@@ -14,7 +14,7 @@ spec:
     type: Git
     git:
       uri: 'https://github.com/openshift/kuryr-kubernetes'
-      ref: release-4.12
+      ref: release-4.15
     contextDir: .
     images: []
   strategy:
