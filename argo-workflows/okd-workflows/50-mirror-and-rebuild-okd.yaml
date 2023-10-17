@@ -61,7 +61,7 @@ spec:
         value: |
           [ [
           { "buildConfig": "installer", "overrideRepoUrl": "", "overrideBranch": "" },
-          { "buildConfig": "machine-config-operator", "overrideRepoUrl": "https://github.com/aleskandro/machine-config-operator", "overrideBranch": "cs9-dockerfile" },
+          { "buildConfig": "machine-config-operator", "overrideRepoUrl": "", "overrideBranch": "" },
           { "buildConfig": "contour", "overrideRepoUrl": "", "overrideBranch": "" },
           { "buildConfig": "machine-os-images", "overrideRepoUrl": "", "overrideBranch": "" },
           { "buildConfig": "baremetal-installer", "overrideRepoUrl": "", "overrideBranch": "" },

@@ -153,6 +153,7 @@ spec:
           - name: buildconfigs-batched-list
       steps:
         - - template: single-batch
+            name: single-batch
             withParam: "{{inputs.parameters.buildconfigs-batched-list}}"
             arguments:
               parameters:
