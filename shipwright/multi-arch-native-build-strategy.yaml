@@ -1,5 +1,5 @@
 ---
-apiVersion: shipwright.io/v1alpha1
+apiVersion: shipwright.io/v1beta1
 kind: ClusterBuildStrategy
 metadata:
   name: multi-arch-native-buildah
@@ -9,7 +9,7 @@ spec:
       emptyDir: { }
     - name: additional-bins
       emptyDir: { }
-  buildSteps:
+  steps:
     - name: prepare-build
       image: quay.io/centos/centos:stream9
       workingDir: $(params.shp-source-root)
