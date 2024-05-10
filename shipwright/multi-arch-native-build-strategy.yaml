@@ -7,10 +7,15 @@ spec:
   volumes:
     - name: oci-archive-storage
       emptyDir: { }
+    - name: additional-bins
+      emptyDir: { }
   buildSteps:
     - name: prepare-build
-      image: quay.io/fedora/fedora:latest
+      image: quay.io/centos/centos:stream9
       workingDir: $(params.shp-source-root)
+      volumeMounts:
+        - mountPath: /usr/local/bin
+          name: additional-bins
       resources:
         requests:
           cpu: 100m
@@ -151,11 +156,9 @@ spec:
           kube_version=$(curl --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt \
             "https:${KUBERNETES_PORT#tcp:}/version" | sed -n 's/^.*gitVersion.*"v\(.*\)+.*$/\1/p')
           arch=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
-          mkdir -p /tmp/bin/
-          export PATH=${PATH}:/tmp/bin/
-          curl -L -o /tmp/bin/kubectl \
+          curl -L -o /usr/local/bin/kubectl \
             "https://storage.googleapis.com/kubernetes-release/release/v${kube_version}/bin/linux/${arch}/kubectl"
-          chmod +x /tmp/bin/kubectl
+          chmod +x /usr/local/bin/kubectl
           task_run_pod=${HOSTNAME}
           task_run_name=${task_run_pod%-pod}
           name=${task_run_name}-job
@@ -325,11 +328,13 @@ spec:
         - --limit-memory
         - '$(params.limit-memory)'
     - name: wait-manifests-complete
-      image: quay.io/fedora/fedora:latest
+      image: quay.io/centos/centos:stream9
       workingDir: /tmp
       volumeMounts:
         - mountPath: /var/oci-archive-storage
           name: oci-archive-storage
+        - mountPath: /usr/local/bin
+          name: additional-bins
       resources:
         requests:
           cpu: 50m
@@ -360,16 +365,6 @@ spec:
               architectures+=("${arg}")
             fi
           done
-          # TODO: what image including kubectl can we use?
-          echo "[INFO] Downloading kubectl..."
-          kube_version=$(curl --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt \
-            "https:${KUBERNETES_PORT#tcp:}/version" | sed -n 's/^.*gitVersion.*"v\(.*\)+.*$/\1/p')
-          arch=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
-          mkdir -p /tmp/bin/
-          export PATH=${PATH}:/tmp/bin/
-          curl -L -o /tmp/bin/kubectl \
-            "https://storage.googleapis.com/kubernetes-release/release/v${kube_version}/bin/linux/${arch}/kubectl"
-          chmod +x /tmp/bin/kubectl
           task_run_pod=${HOSTNAME}
           name=${task_run_pod%-pod}-job
           declare -a success_pids failure_pids
